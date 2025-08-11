@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using ProjectManager.Authorization;
 using ProjectManager.Components;
 using ProjectManager.Components.Account;
 using ProjectManager.Data;
@@ -41,7 +42,12 @@ builder.Services.AddAuthentication(options =>
     })
     .AddIdentityCookies();
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("IsProjectMember", policy => policy.Requirements.Add(new ProjectMemberRequirement()));
+    options.AddPolicy("IsProjectOwner", policy => policy.Requirements.Add(new ProjectOwnerRequirement()));
+    options.AddPolicy("IsCommentAuthor", policy => policy.Requirements.Add(new CommentAuthorRequirement()));
+});
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
