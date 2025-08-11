@@ -1,0 +1,15 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<AuthorizeView Roles="Admin">
+    <div class="alert alert-info">Hello, Admin!</div>
+</AuthorizeView>
+
+<AuthorizeView>
+    <p>Signed in as @context.User.Identity?.Name</p>
+</AuthorizeView>
