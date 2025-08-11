@@ -1,7 +1,10 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Authorization;
+using ProjectManager.Authorization.Handlers;
 using ProjectManager.Components;
 using ProjectManager.Components.Account;
 using ProjectManager.Data;
@@ -53,6 +56,11 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
 builder.Services.AddScoped<IProjectAccessService, ProjectAccessService>();
+builder.Services.AddScoped<IAuthorizationHandler, ProjectMemberForProjectHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, ProjectMemberForTaskHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, ProjectOwnerForProjectHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, ProjectOwnerForTaskHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, CommentAuthorHandler>();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -105,5 +113,24 @@ app.MapRazorComponents<App>()
 
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
+
+app.MapPost("/api/projects/{projectId:guid}/invite", async (
+        Guid projectId,
+        string userToInviteId,
+        ApplicationDbContext db,
+        IAuthorizationService auth,
+        ClaimsPrincipal user,
+        CancellationToken ct) =>
+    {
+        var project = await db.Projects.FindAsync([projectId], ct);
+        if (project is null) return Results.NotFound();
+
+        var result = await auth.AuthorizeAsync(user, project, "IsProjectOwner");
+        if (!result.Succeeded) return Results.Forbid();
+
+        // ... добавить участника ...
+        return Results.Ok();
+    })
+    .RequireAuthorization();
 
 app.Run();
