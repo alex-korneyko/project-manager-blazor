@@ -18,7 +18,7 @@ public class ProjectAccessService(ApplicationDbContext dbContext) : IProjectAcce
         return await dbContext.Projects.AnyAsync(project => project.Id == projectId && project.Owner.Id == userId, ct);
     }
 
-    public async Task<bool> IsCommentOwnerAsync(Guid commentId, string userId, CancellationToken ct = default)
+    public async Task<bool> IsCommentAuthorAsync(Guid commentId, string userId, CancellationToken ct = default)
     {
         return await dbContext.TaskComments.AnyAsync(comment => comment.Id == commentId && comment.Author.Id == userId, ct);
     }

@@ -5,7 +5,7 @@ using ProjectManager.Domain.Entities;
 
 namespace ProjectManager.Authorization.Handlers;
 
-public sealed class CommentAuthorHandler(ApplicationDbContext dbContext) : AuthorizationHandler<CommentAuthorRequirement, TaskComment>
+public sealed class CommentAuthorHandler : AuthorizationHandler<CommentAuthorRequirement, TaskComment>
 {
     protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, CommentAuthorRequirement requirement,
         TaskComment resource)

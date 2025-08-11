@@ -43,7 +43,8 @@ public sealed class ProjectMemberForTaskHandler(ApplicationDbContext dbContext)
         var isMember = await dbContext.Projects
             .Where(project => project.Id == resource.ProjectId)
             .AnyAsync(project => project.OwnerId == userId
-                               || dbContext.ProjectMembers.Any(member => member.UserId == userId));
+                               || dbContext.ProjectMembers.Any(member => member.ProjectId == project.Id
+                                                                         && member.UserId == userId));
 
         if (isMember)
             context.Succeed(requirement);
