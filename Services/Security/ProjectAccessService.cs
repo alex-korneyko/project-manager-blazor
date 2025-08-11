@@ -10,29 +10,30 @@ public class ProjectAccessService(ApplicationDbContext dbContext) : IProjectAcce
     {
         return await dbContext.Projects
             .Where(project => project.Id == projectId)
-            .AnyAsync(project => project.Owner.Id == userId || project.Members.Any(member => member.UserId == userId), ct);
+            .AnyAsync(project => project.OwnerId == userId || project.Members.Any(member => member.UserId == userId), ct);
     }
 
     public async Task<bool> IsProjectOwnerAsync(Guid projectId, string userId, CancellationToken ct = default)
     {
-        return await dbContext.Projects.AnyAsync(project => project.Id == projectId && project.Owner.Id == userId, ct);
+        return await dbContext.Projects.AnyAsync(project => project.Id == projectId && project.OwnerId == userId, ct);
     }
 
     public async Task<bool> IsCommentAuthorAsync(Guid commentId, string userId, CancellationToken ct = default)
     {
-        return await dbContext.TaskComments.AnyAsync(comment => comment.Id == commentId && comment.Author.Id == userId, ct);
+        return await dbContext.TaskComments.AnyAsync(comment => comment.Id == commentId && comment.AuthorId == userId, ct);
     }
 
     public async Task<Project?> GetProjectIfVisibleAsync(Guid projectId, string userId, CancellationToken ct = default)
     {
         return await dbContext.Projects
-            .Where(project => project.Id == projectId && (project.Owner.Id == userId || project.Members.Any(member => member.UserId == userId)))
+            .Where(project => project.Id == projectId && (project.OwnerId == userId || project.Members.Any(member => member.UserId == userId)))
             .FirstOrDefaultAsync(ct);
     }
 
     public async Task<IReadOnlyList<Project>> GetVisibleProjectsAsync(string userId, CancellationToken ct = default)
     {
         return await dbContext.Projects
-            .Where(project => project.Owner.Id == userId || project.Members.Any(member => member.UserId == userId)).ToListAsync(ct);
+            .Where(project => project.OwnerId == userId || project.Members.Any(member => member.UserId == userId))
+            .ToListAsync(ct);
     }
 }
