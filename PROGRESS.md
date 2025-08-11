@@ -58,3 +58,35 @@ Iteration 4 — Tasks
 Notes:
 - Consider adding PROGRESS.md to the repository and copying this summary there; keep a running log of iterations, decisions, and links to commits.
 - Ensure any leftover SQLite artifacts are removed and ignored (if present) now that SQL Server is the target.
+
+## Iteration 2 — Authorization (resource-based)
+**Date:** 2025-08-11 19:10 EEST
+**PR:** #1 (iter-2-auth → main)
+
+### What was added
+- Policies (requirements): `IsProjectMember`, `IsProjectOwner`, `IsCommentAuthor`.
+- Authorization handlers (resource-based) for `Project`, `TaskItem`, `TaskComment`; registered in DI as *Scoped*.
+- `IProjectAccessService` + `ProjectAccessService`:
+   - `IsProjectMemberAsync`, `IsProjectOwnerAsync`, `IsCommentAuthorAsync`
+   - `GetProjectIfVisibleAsync`, `GetVisibleProjectsAsync`
+- Program wiring: policies registered, handlers and access service added to DI, minimal API example for `/api/projects/{projectId}/invite` protected by `IsProjectOwner`.
+
+### Notes / decisions
+- Member/owner checks are always evaluated **per project** (no cross-project leakage).
+- Comment editing/deletion is limited to the **author**; this will be used in UI and endpoints.
+- Handlers are resource-based so they can be used both in Minimal API and Blazor components via `IAuthorizationService`.
+
+### Small follow-ups (nice-to-have)
+- In `Program.cs` there are two consecutive `AddAuthorization(...)` calls; one can be removed (keep the overload with options).
+- In `ProjectAccessService` prefer comparing `OwnerId`/`AuthorId` fields (simple columns) instead of joining via navigation properties — a micro-optimization for generated SQL.
+- Remove unused `using` in `CommentAuthorHandler` if present.
+
+### Self-checks performed
+- Verified that member check for tasks filters by **current** project ID.
+- Confirmed handlers are registered as Scoped and invoked via `IAuthorizationService`.
+
+### Next
+**Iteration 3 — Projects UI & invitations**
+- Projects list (only owned/joined).
+- Project details with **Members** tab (owner-only) and invite form.
+- Implement `/api/projects/{id}/invite`: validate user existence, prevent duplicates (409), add member.
