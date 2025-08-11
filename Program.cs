@@ -6,6 +6,7 @@ using ProjectManager.Components;
 using ProjectManager.Components.Account;
 using ProjectManager.Data;
 using ProjectManager.Data.Models;
+using ProjectManager.Services.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +51,8 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+
+builder.Services.AddScoped<IProjectAccessService, ProjectAccessService>();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
