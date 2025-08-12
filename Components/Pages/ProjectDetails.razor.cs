@@ -100,10 +100,10 @@ public partial class ProjectDetails : ComponentBase
             });
             await DbContext.SaveChangesAsync();
 
-            // Обновим список
+            // Refresh list
             await OnParametersSetAsync();
             _inviteEmail = "";
-            _inviteOk = "Участник добавлен.";
+            _inviteOk = "Member invited.";
         }
         catch (Exception e)
         {
@@ -122,21 +122,21 @@ public partial class ProjectDetails : ComponentBase
 
             var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
             var ownerCheck = await AuthorizationService.AuthorizeAsync(user, _project, "IsProjectOwner");
-            if (!ownerCheck.Succeeded) { _inviteError = "Нет прав для удаления."; return; }
+            if (!ownerCheck.Succeeded) { _inviteError = "No rights to delete."; return; }
 
             var pm = await DbContext.ProjectMembers.FirstOrDefaultAsync(x => x.Id == projectMemberId && x.ProjectId == _project.Id);
-            if (pm is null) { _inviteError = "Участник не найден."; return; }
+            if (pm is null) { _inviteError = "Member not found."; return; }
 
             DbContext.ProjectMembers.Remove(pm);
             await DbContext.SaveChangesAsync();
 
             await OnParametersSetAsync();
-            _inviteOk = "Участник удалён.";
+            _inviteOk = "Member removed.";
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Remove member failed");
-            _inviteError = "Не удалось удалить участника.";
+            _inviteError = "Remove member failed.";
         }
     }
 }
