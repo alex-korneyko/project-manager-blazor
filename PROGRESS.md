@@ -90,3 +90,68 @@ Notes:
 - Projects list (only owned/joined).
 - Project details with **Members** tab (owner-only) and invite form.
 - Implement `/api/projects/{id}/invite`: validate user existence, prevent duplicates (409), add member.
+
+## Iteration 3 — Projects UI & Invitations
+**Date:** 2025-08-12 (EEST)  
+**PR:** #2 (iter-3-projects-ui → main)
+
+### Goals
+- Implement the basic UI for working with projects:
+   - “My Projects” page (shows projects where the user is the owner or a member).
+   - Project details page with a **Members** tab (visible to the owner only).
+- Add server-side logic to invite users by email/username:
+   - Enforce project owner privileges.
+   - Validate user existence and prevent duplicates.
+   - Add/remove project members.
+
+### UI
+- `Pages/Projects.razor`
+   - Display the list of visible projects via `IProjectAccessService.GetVisibleProjectsAsync`.
+   - Provide a form to create a new project (Name, Description).
+   - Navigate to the project details view.
+- `Pages/ProjectDetails.razor`
+   - Load the project with Owner and Members.
+   - Access checks: `IsProjectMember` to view; `IsProjectOwner` for the **Members** tab.
+   - Invitation form by email/username.
+   - Render members list; allow removing a member (owner only).
+- Navigation
+   - Add a “Projects” menu item → `/projects`.
+
+### server logic
+- Reuse resource-based policies from Iteration 2:
+   - `IsProjectMember` to open a project.
+   - `IsProjectOwner` to invite/remove members.
+- Work with users through `UserManager<ApplicationUser>`:
+   - Look up users by email/username.
+- Validations & responses:
+   - 404/Forbidden when the project is not visible to the current user.
+   - Invitation errors: “user not found”, “already a member”, “not authorized”.
+- Data access: use `ApplicationDbContext` directly in components for now; later we may extract to a dedicated `ProjectService`.
+
+### Acceptance
+- The user sees a list of projects they own or participate in.
+- The owner can:
+   - Invite an existing user.
+   - Remove a member.
+- Non-owners cannot see the **Members** tab or perform related operations.
+- Unauthorized users cannot access `/projects/{id}` for projects they do not belong to.
+- All checks use `IAuthorizationService` with resource instances.
+
+### Manual test scenarios
+1. User A creates a project and sees it under “My Projects”.
+2. User B does not see A’s project until invited.
+3. Owner (A) opens project details → **Members** tab is visible.
+4. A invites B by email → B now sees the project.
+5. A removes B → B loses access.
+6. Any non-member visiting `/projects/{id}` gets “not found/forbidden”.
+
+### Implementation notes
+- In Blazor Server, it’s acceptable to perform operations directly in components at this stage (no separate API required).
+- Add brief success/error messages (alerts/toasts) for UX polish.
+- Later, move the logic to services and add integration tests.
+
+### Next (after Iteration 3)
+- **Iteration 4 — Tasks CRUD & Statuses**
+   - CRUD for tasks within a project; statuses (`Backlog`, `InProgress`, `Blocked`, `Done`).
+   - Access rules: members can view/create; editing/deleting by task author or project owner.
+- Prepare for Iteration 5 — task attachments/images (upload + access checks).
