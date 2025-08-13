@@ -12,8 +12,15 @@ public partial class TaskKanban : ComponentBase
 {
     [Parameter] public Guid ProjectId { get; set; }
 
-    private readonly TaskStatus[] _columnsOrder = new[] {
+    private readonly TaskStatus[] _columnsOrder =
+    [
         TaskStatus.Backlog, TaskStatus.InProgress, TaskStatus.Blocked, TaskStatus.Done
+    ];
+
+    private readonly Dictionary<TaskStatus, bool> _hover = new()
+    {
+        { TaskStatus.Backlog, false }, { TaskStatus.InProgress, false },
+        { TaskStatus.Blocked, false }, { TaskStatus.Done, false }
     };
 
     private readonly Dictionary<TaskStatus, List<TaskItem>> _columns = new();
@@ -111,7 +118,11 @@ public partial class TaskKanban : ComponentBase
         {
             if (_draggingId  is { } id)
                 _busyTasks.Remove(id);
+
             _draggingId = null;
+
+            _hover.Keys.ToList().ForEach(k => _hover[k] = false);
+
             StateHasChanged();
         }
     }
@@ -202,6 +213,9 @@ public partial class TaskKanban : ComponentBase
             StateHasChanged();
         }
     }
+
+    private void OnDragEnter(TaskStatus col) => _hover[col] = true;
+    private void OnDragLeave(TaskStatus col) => _hover[col] = false;
 
     private sealed class TaskEditModel
     {

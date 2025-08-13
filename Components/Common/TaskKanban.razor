@@ -2,9 +2,14 @@
 <div class="kanban">
     @foreach (var col in _columnsOrder)
     {
-        <div class="kanban-col"
-             ondragover="event.preventDefault()"
-             @ondrop="@(() => OnDrop(col))">
+        <div class="kanban-col @( _hover[col] ? "drop-target" : null )"
+             @ondragenter="@(() => OnDragEnter(col))"
+             @ondragleave="@(() => OnDragLeave(col))"
+             @ondragover="@(() => { })"
+             @ondragover:preventDefault="true"
+             @ondragenter:preventDefault="true"
+             @ondrop="@(() => OnDrop(col))"
+             @ondrop:preventDefault="true">
             <div class="kanban-col-header">
                 <span class="badge bg-secondary">@col</span>
                 <span class="count">@(_columns[col].Count)</span>
@@ -20,6 +25,7 @@
                 var busy = _busyTasks.Contains(t.Id);
 
                 <TaskKanbanCard
+                    @key="t.Id"
                     Task="t"
                     Class="@(busy ? "busy" : null)"
                     draggable="true"

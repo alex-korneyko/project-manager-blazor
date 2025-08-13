@@ -58,3 +58,9 @@
     position: relative;
     top: -2px;
 }
+
+.drop-target {
+    outline: 2px dashed #60a5fa;
+    outline-offset: -6px;
+    background: #eef6ff;
+}
