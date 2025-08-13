@@ -1,0 +1,23 @@
+﻿
+<div class="kanban-card @Class" @attributes="AdditionalAttributes">
+    @if (Task is null)
+    {
+        <div class="title text-muted">Loading…</div>
+    }
+    else
+    {
+        <div class="title">@Task.Title</div>
+        @if (!string.IsNullOrWhiteSpace(Task.DescriptionMarkdown))
+        {
+            <div class="desc text-muted">@Task.DescriptionMarkdown</div>
+        }
+        <div class="meta text-muted">
+            Author: @(Task.Author.Email ?? Task.AuthorId)
+            • @Task.CreatedAtUtc.ToLocalTime()
+        </div>
+    }
+</div>
+
+@code {
+
+}

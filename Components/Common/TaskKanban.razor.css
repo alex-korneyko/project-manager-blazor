@@ -22,36 +22,6 @@
     font-weight: 600;
 }
 
-.kanban-card {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: .5rem;
-    padding: .5rem .6rem;
-    margin-bottom: .5rem;
-    cursor: grab;
-}
-
-.kanban-card.busy {
-    opacity: .6;
-    pointer-events: none;
-}
-
-.kanban-card .title {
-    font-weight: 600;
-    margin-bottom: .25rem;
-}
-
-.kanban-card .desc {
-    font-size: .85rem;
-    max-height: 4.2em;
-    overflow: hidden;
-}
-
-.kanban-card .meta {
-    font-size: .75rem;
-    margin-top: .25rem;
-}
-
 .kanban-empty {
     color: #9aa0a6;
     font-size: .9rem;

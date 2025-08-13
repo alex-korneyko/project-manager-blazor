@@ -18,19 +18,15 @@
             @foreach (var t in _columns[col])
             {
                 var busy = _busyTasks.Contains(t.Id);
-                <div class="kanban-card @(busy ? "busy" : null)"
-                     draggable="true"
-                     @ondragstart="@(() => OnDragStart(t.Id))">
-                    <div class="title">@t.Title</div>
-                    @if (!string.IsNullOrWhiteSpace(t.DescriptionMarkdown))
-                    {
-                        <div class="desc text-muted">@t.DescriptionMarkdown</div>
-                    }
-                    <div class="meta text-muted">
-                        Author: @(_usersById.TryGetValue(t.AuthorId, out var a) ? a : t.AuthorId)
-                        • @t.CreatedAtUtc.ToLocalTime()
-                    </div>
-                </div>
+
+                <TaskKanbanCard
+                    Task="t"
+                    Class="@(busy ? "busy" : null)"
+                    AdditionalAttributes="@(new Dictionary<string, object>
+                                          {
+                                              {"draggable", true.ToString()},
+                                              {"ondragstart", () => OnDragStart(t.Id)}
+                                          })"/>
             }
         </div>
     }
