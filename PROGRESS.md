@@ -155,3 +155,48 @@ Notes:
    - CRUD for tasks within a project; statuses (`Backlog`, `InProgress`, `Blocked`, `Done`).
    - Access rules: members can view/create; editing/deleting by task author or project owner.
 - Prepare for Iteration 5 — task attachments/images (upload + access checks).
+
+
+## Iteration 4 — Tasks CRUD & Statuses
+**Date:** 2025-08-13 (EEST)  
+**PR:** #3 (`iter-4-tasks` → `main`)
+
+### What’s done
+- **Security**
+    - Added `TaskModifyRequirement` + `TaskModifyHandler` (resource-based): a task can be **edited/deleted** by its **author** or the **project owner**.
+    - Status changes allowed to **any project member** via existing `IsProjectMember` policy (resource = `TaskItem`).
+
+- **UI (Project Details page)**
+    - **Create Task** form (Title, optional Markdown description, initial Status).
+    - Task list with author/email, created time, **status dropdown**, and conditional **Edit/Delete** actions.
+    - Inline edit form (save/cancel) for title/description.
+    - Basic button-disable UX to avoid accidental submits.
+
+- **Data flow**
+    - On create: set `AuthorId`, `CreatedAtUtc`, bind `ProjectId`.
+    - Reload tasks after create/update/delete; order by `CreatedAtUtc` (desc).
+
+### Access rules (recap)
+- **Create / Change status** → `IsProjectMember` (any member).
+- **Update / Delete** → `CanModifyTask` (task author **or** project owner).
+
+### Manual test checklist
+1. Owner (A) creates several tasks; list shows newest first.
+2. Member (B) after invitation can create tasks & change statuses, but **cannot** edit/delete A’s tasks.
+3. Owner (A) can edit/delete **any** project task.
+4. Non-members cannot access `/projects/{id}` nor see tasks.
+5. Validation: title is required (min length), action buttons disabled until valid.
+
+### Notes / small follow-ups
+- Ensure policy & DI are wired in `Program.cs`:
+    - `options.AddPolicy("CanModifyTask", p => p.Requirements.Add(new TaskModifyRequirement()));`
+    - `services.AddScoped<IAuthorizationHandler, TaskModifyHandler>();`
+- Keep UI language consistent (EN or RU) and remove duplicated labels.
+- Consider DB index `Tasks(ProjectId, CreatedAtUtc)` to speed up listings.
+- Next UX steps: Kanban drag & drop; Markdown preview; toast notifications.
+
+### Next
+**Iteration 5 — Task Attachments & Images**
+- File upload per task with access checks.
+- Inline images in descriptions + simple preview/gallery.
+- Deletion & cleanup rules (task author / project owner).
