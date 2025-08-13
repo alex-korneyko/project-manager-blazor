@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Common.Security;
+using ProjectManager.Components.Common;
 using ProjectManager.Data;
 using ProjectManager.Data.Models;
 using ProjectManager.Domain.Entities;
@@ -33,6 +34,8 @@ public partial class ProjectDetails : ComponentBase
     private string? _taskError;
     private bool _createTaskButtonDisabled = true;
     private bool _inviteButtonDisabled = true;
+
+    private TaskKanban? _kanban;
 
     [Parameter] public Guid ProjectId { get; set; }
 
@@ -205,6 +208,11 @@ public partial class ProjectDetails : ComponentBase
 
             _newTask = new(); // reset
             await LoadTasksAsync();
+
+            if (_kanban is not null)
+            {
+                await _kanban.ReloadAsync();
+            }
         }
         catch (Exception ex)
         {

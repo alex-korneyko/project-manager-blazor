@@ -1,0 +1,46 @@
+﻿
+<div class="kanban">
+    @foreach (var col in _columnsOrder)
+    {
+        <div class="kanban-col"
+             ondragover="event.preventDefault()"
+             @ondrop="@(() => OnDrop(col))">
+            <div class="kanban-col-header">
+                <span class="badge bg-secondary">@col</span>
+                <span class="count">@(_columns[col].Count)</span>
+            </div>
+
+            @if (_columns[col].Count == 0)
+            {
+                <div class="kanban-empty">Move task here</div>
+            }
+
+            @foreach (var t in _columns[col])
+            {
+                var busy = _busyTasks.Contains(t.Id);
+                <div class="kanban-card @(busy ? "busy" : null)"
+                     draggable="true"
+                     @ondragstart="@(() => OnDragStart(t.Id))">
+                    <div class="title">@t.Title</div>
+                    @if (!string.IsNullOrWhiteSpace(t.DescriptionMarkdown))
+                    {
+                        <div class="desc text-muted">@t.DescriptionMarkdown</div>
+                    }
+                    <div class="meta text-muted">
+                        Author: @(_usersById.TryGetValue(t.AuthorId, out var a) ? a : t.AuthorId)
+                        • @t.CreatedAtUtc.ToLocalTime()
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@if (!string.IsNullOrWhiteSpace(_error))
+{
+    <div class="alert alert-danger mt-3">@_error</div>
+}
+
+@code {
+    
+}
