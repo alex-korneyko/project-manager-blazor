@@ -51,6 +51,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("IsProjectMember", policy => policy.Requirements.Add(new ProjectMemberRequirement()));
     options.AddPolicy("IsProjectOwner", policy => policy.Requirements.Add(new ProjectOwnerRequirement()));
     options.AddPolicy("IsCommentAuthor", policy => policy.Requirements.Add(new CommentAuthorRequirement()));
+    options.AddPolicy("CanTaskModify", policy => policy.Requirements.Add(new TaskModifyRequirement()));
 });
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
@@ -61,6 +62,7 @@ builder.Services.AddScoped<IAuthorizationHandler, ProjectMemberForTaskHandler>()
 builder.Services.AddScoped<IAuthorizationHandler, ProjectOwnerForProjectHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ProjectOwnerForTaskHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, CommentAuthorHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, TaskModifyHandler>();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

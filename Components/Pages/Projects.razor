@@ -16,9 +16,13 @@
 else
 {
     <div class="mb-4">
-        <input class="form-control" placeholder="Project name" @bind="_newProjectName"/>
+        <input class="form-control" placeholder="Project name" @oninput="NewProjectNameOnInput"/>
         <textarea class="form-control mt-2" placeholder="Description" @bind="_newProjectDesc"></textarea>
-        <button class="btn btn-primary mt-2" @onclick="CreateProject" disabled="@string.IsNullOrWhiteSpace(_newProjectName)">Create project</button>
+        <button class="btn btn-primary mt-2"
+                @onclick="CreateProject"
+                disabled="@(string.IsNullOrWhiteSpace(_newProjectName) || _newProjectName.Length < 2)">
+            Create project
+        </button>
 
         @if (!string.IsNullOrWhiteSpace(_error))
         {
@@ -28,7 +32,7 @@ else
 
     @if (_projects?.Count == 0)
     {
-        <p>No projects yet.</p>
+        <p>There are no projects yet.</p>
     }
     else
     {
