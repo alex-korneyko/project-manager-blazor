@@ -7,7 +7,7 @@
 
 @inject NavigationManager NavigationManager
 
-<button class="btn btn-primary mt-2" @onclick="@(() => NavigationManager.NavigateTo($"/projects/"))">Back to Projects list</button>
+<button class="btn btn-primary mt-2" @onclick="@(() => NavigationManager.NavigateTo("/projects/"))">Back to Projects list</button>
 <hr class="my-3" />
 
 <h2 class="mb-3">@_project?.Name</h2>
@@ -92,7 +92,7 @@ else
                             </div>
 
                             <div class="d-flex flex-column align-items-end" style="min-width:220px">
-                                <!-- Статус: менять может любой участник -->
+                                <!-- Status: any member can change -->
                                 <div class="mb-2">
                                     <select class="form-select form-select-sm" value="@t.Status"
                                             @onchange="async e => await ChangeStatusAsync(t, Enum.Parse<TaskStatus>(e.Value?.ToString() ?? nameof(TaskStatus.Backlog)))">
@@ -123,7 +123,7 @@ else
         <div class="mt-5">
             <h4>Members</h4>
             <div class="mb-2">
-                <input class="form-control" placeholder="Email пользователя для приглашения" @oninput="@(InviteEmailChanged)"/>
+                <input class="form-control" placeholder="User's email to invite" @oninput="@(InviteEmailChanged)"/>
                 <button class="btn btn-primary mt-2" @onclick="Invite" disabled="@_inviteButtonDisabled">Invite</button>
                 @if (!string.IsNullOrWhiteSpace(_inviteError)) { <div class="text-danger mt-2">@_inviteError</div> }
                 @if (!string.IsNullOrWhiteSpace(_inviteOk)) { <div class="text-success mt-2">@_inviteOk</div> }

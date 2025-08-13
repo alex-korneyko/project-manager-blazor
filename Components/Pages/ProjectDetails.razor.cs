@@ -100,7 +100,6 @@ public partial class ProjectDetails : ComponentBase
             if (string.IsNullOrWhiteSpace(email)) { _inviteError = "Enter Email"; return; }
 
             // Найдём пользователя
-            // var userMgr = _dbContext.GetService<UserManager<ApplicationUser>>();
             var target = await UserManager.FindByEmailAsync(email);
             if (target is null) { _inviteError = "User with entered Email not found."; return; }
 
@@ -159,7 +158,6 @@ public partial class ProjectDetails : ComponentBase
 
     private async Task LoadTasksAsync()
     {
-        // загрузим задачи + автора (для email)
         _tasks = await DbContext.Tasks
             .Where(t => t.ProjectId == ProjectId)
             .OrderByDescending(t => t.CreatedAtUtc)
@@ -181,7 +179,6 @@ public partial class ProjectDetails : ComponentBase
         {
             if (_project is null) return;
 
-            // участник проекта может создавать задачи
             var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
             var memberResult = await AuthorizationService.AuthorizeAsync(user, _project, "IsProjectMember");
             if (!memberResult.Succeeded) { _taskError = "No rights to task create."; return; }
