@@ -60,4 +60,9 @@ public partial class Projects : ComponentBase
             _error = "Failed to create project";
         }
     }
+
+    private void NewProjectNameOnInput(ChangeEventArgs args)
+    {
+        _newProjectName = args.Value?.ToString() ?? "";
+    }
 }

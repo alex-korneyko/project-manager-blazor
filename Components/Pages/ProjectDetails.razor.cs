@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -30,6 +31,8 @@ public partial class ProjectDetails : ComponentBase
     private Guid? _editId;
     private bool _creating;
     private string? _taskError;
+    private bool _createTaskButtonDisabled = true;
+    private bool _inviteButtonDisabled = true;
 
     [Parameter] public Guid ProjectId { get; set; }
 
@@ -181,12 +184,12 @@ public partial class ProjectDetails : ComponentBase
             // участник проекта может создавать задачи
             var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
             var memberResult = await AuthorizationService.AuthorizeAsync(user, _project, "IsProjectMember");
-            if (!memberResult.Succeeded) { _taskError = "Нет прав для создания задачи."; return; }
+            if (!memberResult.Succeeded) { _taskError = "No rights to task create."; return; }
 
             if (_currentUserId == null)
             {
                 Logger.LogWarning("CreateTask failed. CurrentUserId is null.");
-                _taskError = "Не удалось создать задачу.";
+                _taskError = "Failed to create task. CurrentUserId is null.";
                 return;
             }
 
@@ -209,7 +212,7 @@ public partial class ProjectDetails : ComponentBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "CreateTask failed");
-            _taskError = "Не удалось создать задачу.";
+            _taskError = "Failed to create task.";
         }
         finally { _creating = false; }
     }
@@ -237,7 +240,7 @@ public partial class ProjectDetails : ComponentBase
         {
             var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
             var canModify = await AuthorizationService.AuthorizeAsync(user, t, "CanTaskModify");
-            if (!canModify.Succeeded) { _taskError = "Нет прав для изменения задачи."; return; }
+            if (!canModify.Succeeded) { _taskError = "No rights to task update."; return; }
 
             t.Title = _editTask.Title.Trim();
             t.DescriptionMarkdown = string.IsNullOrWhiteSpace(_editTask.DescriptionMarkdown) ? null : _editTask.DescriptionMarkdown!.Trim();
@@ -249,7 +252,7 @@ public partial class ProjectDetails : ComponentBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "UpdateTask failed");
-            _taskError = "Не удалось сохранить изменения.";
+            _taskError = "Failed to update task.";
         }
     }
 
@@ -259,7 +262,7 @@ public partial class ProjectDetails : ComponentBase
         {
             var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
             var canModify = await AuthorizationService.AuthorizeAsync(user, t, "CanModifyTask");
-            if (!canModify.Succeeded) { _taskError = "Нет прав для удаления задачи."; return; }
+            if (!canModify.Succeeded) { _taskError = "No rights to task delete."; return; }
 
             DbContext.Tasks.Remove(t);
             await DbContext.SaveChangesAsync();
@@ -269,7 +272,7 @@ public partial class ProjectDetails : ComponentBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "DeleteTask failed");
-            _taskError = "Не удалось удалить задачу.";
+            _taskError = "Failed to delete task.";
         }
     }
 
@@ -279,7 +282,7 @@ public partial class ProjectDetails : ComponentBase
         {
             var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
             var isMember = await AuthorizationService.AuthorizeAsync(user, t, "IsProjectMember");
-            if (!isMember.Succeeded) { _taskError = "Нет прав для смены статуса."; return; }
+            if (!isMember.Succeeded) { _taskError = "No rights to change status."; return; }
 
             t.Status = newStatus;
             await DbContext.SaveChangesAsync();
@@ -287,20 +290,29 @@ public partial class ProjectDetails : ComponentBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "ChangeStatus failed");
-            _taskError = "Не удалось изменить статус.";
+            _taskError = "ChangeStatus failed.";
         }
     }
 
     private void InviteEmailChanged(ChangeEventArgs args)
     {
         _inviteEmail = args.Value?.ToString() ?? "";
+
+        var emailAddressAttribute = new EmailAddressAttribute();
+        var result = emailAddressAttribute.IsValid(_inviteEmail);
+        _inviteButtonDisabled = !result;
     }
 
     private sealed class TaskEditModel
     {
-        [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.MinLength(2)]
+        [Required, MinLength(2)]
         public string Title { get; set; } = string.Empty;
         public string? DescriptionMarkdown { get; set; }
         public TaskStatus Status { get; set; } = TaskStatus.Backlog;
+    }
+
+    private void TaskTitleChanged(ChangeEventArgs args)
+    {
+        _createTaskButtonDisabled = args.Value?.ToString() is null || ((string)args.Value).Length < 2;
     }
 }

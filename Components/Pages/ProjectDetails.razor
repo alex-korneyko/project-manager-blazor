@@ -5,32 +5,37 @@
 @attribute [Authorize]
 @page "/projects/{ProjectId:guid}"
 
+@inject NavigationManager NavigationManager
+
+<button class="btn btn-primary mt-2" @onclick="@(() => NavigationManager.NavigateTo($"/projects/"))">Back to Projects list</button>
+<hr class="my-3" />
+
 <h2 class="mb-3">@_project?.Name</h2>
 
 @if (_loading)
 {
-    <p>Загрузка…</p>
+    <p>Loading…</p>
 }
 else if (_project is null)
 {
-    <p class="text-danger">Проект не найден или нет доступа.</p>
+    <p class="text-danger">Project not found or access denied.</p>
 }
 else
 {
     <p class="text-muted">@_project.Description</p>
 
     <div class="mt-4">
-        <h4>Задачи</h4>
+        <h4>Tasks</h4>
 
         <EditForm Model="_newTask" OnValidSubmit="CreateTaskAsync">
             <DataAnnotationsValidator />
             <div class="row g-2 align-items-start">
                 <div class="col-12 col-md-4">
-                    <InputText @bind-Value="_newTask.Title" class="form-control" placeholder="Название задачи" />
+                    <InputText @bind-Value="_newTask.Title" class="form-control" placeholder="Task name" @oninput="TaskTitleChanged"/>
                     <ValidationMessage For="@(() => _newTask.Title)" />
                 </div>
                 <div class="col-12 col-md-5">
-                    <InputTextArea @bind-Value="_newTask.DescriptionMarkdown" class="form-control" placeholder="Краткое описание (Markdown, опционально)" />
+                    <InputTextArea @bind-Value="_newTask.DescriptionMarkdown" class="form-control" placeholder="Short description (Markdown is optional)" />
                 </div>
                 <div class="col-12 col-md-2">
                     <InputSelect @bind-Value="_newTask.Status" class="form-select">
@@ -41,7 +46,7 @@ else
                     </InputSelect>
                 </div>
                 <div class="col-12 col-md-1 d-grid">
-                    <button class="btn btn-primary" type="submit" disabled="@_creating">Добавить</button>
+                    <button class="btn btn-primary" type="submit" disabled="@(_creating || _createTaskButtonDisabled)">Create</button>
                 </div>
             </div>
             @if (!string.IsNullOrWhiteSpace(_taskError)) { <div class="text-danger mt-2">@_taskError</div> }
@@ -51,7 +56,7 @@ else
 
         @if (_tasks.Count == 0)
         {
-            <p class="text-muted">Пока нет задач.</p>
+            <p class="text-muted">There are no tasks yet.</p>
         }
         else
         {
@@ -70,8 +75,8 @@ else
                                         <ValidationMessage For="@(() => _editTask.Title)" />
                                         <InputTextArea @bind-Value="_editTask.DescriptionMarkdown" class="form-control mb-2" rows="3" />
                                         <div class="d-flex gap-2">
-                                            <button class="btn btn-success btn-sm" type="submit">Сохранить</button>
-                                            <button class="btn btn-outline-secondary btn-sm" type="button" @onclick="CancelEdit">Отмена</button>
+                                            <button class="btn btn-success btn-sm" type="submit">Save</button>
+                                            <button class="btn btn-outline-secondary btn-sm" type="button" @onclick="CancelEdit">Cancel</button>
                                         </div>
                                     </EditForm>
                                 }
@@ -82,7 +87,7 @@ else
                                     {
                                         <div class="text-muted small">@t.DescriptionMarkdown</div>
                                     }
-                                    <div class="text-muted small">Автор: @(_usersById.TryGetValue(t.AuthorId, out var a) ? a : t.AuthorId), @t.CreatedAtUtc.ToLocalTime()</div>
+                                    <div class="text-muted small">Author: @(_usersById.TryGetValue(t.AuthorId, out var a) ? a : t.AuthorId), @t.CreatedAtUtc.ToLocalTime()</div>
                                 }
                             </div>
 
@@ -101,8 +106,8 @@ else
                                 @if (canModify)
                                 {
                                     <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-secondary" @onclick="() => BeginEdit(t)">Редактировать</button>
-                                        <button class="btn btn-outline-danger" @onclick="() => DeleteTaskAsync(t)">Удалить</button>
+                                        <button class="btn btn-outline-secondary" @onclick="() => BeginEdit(t)">Edit</button>
+                                        <button class="btn btn-outline-danger" @onclick="() => DeleteTaskAsync(t)">Delete</button>
                                     </div>
                                 }
                             </div>
@@ -116,22 +121,22 @@ else
     @if (_isOwner)
     {
         <div class="mt-5">
-            <h4>Участники</h4>
+            <h4>Members</h4>
             <div class="mb-2">
                 <input class="form-control" placeholder="Email пользователя для приглашения" @oninput="@(InviteEmailChanged)"/>
-                <button class="btn btn-primary mt-2" @onclick="Invite" disabled="@string.IsNullOrWhiteSpace(_inviteEmail)">Пригласить</button>
+                <button class="btn btn-primary mt-2" @onclick="Invite" disabled="@_inviteButtonDisabled">Invite</button>
                 @if (!string.IsNullOrWhiteSpace(_inviteError)) { <div class="text-danger mt-2">@_inviteError</div> }
                 @if (!string.IsNullOrWhiteSpace(_inviteOk)) { <div class="text-success mt-2">@_inviteOk</div> }
             </div>
             <ul class="list-group">
                 <li class="list-group-item d-flex justify-content-between">
-                    <span><strong>Владелец:</strong> @_ownerEmail</span>
+                    <span><strong>Owner:</strong> @_ownerEmail</span>
                 </li>
                 @foreach (var m in _members)
                 {
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <span>@m.User.Email (@m.Role)</span>
-                        <button class="btn btn-sm btn-outline-danger" @onclick="() => RemoveMember(m.Id)">Удалить</button>
+                        <button class="btn btn-sm btn-outline-danger" @onclick="() => RemoveMember(m.Id)">Delete</button>
                     </li>
                 }
             </ul>
