@@ -1,5 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Authorization
 @using TaskStatus = ProjectManager.Domain.Entities.TaskStatus;
+@using ProjectManager.Components.Common
 
 @rendermode InteractiveServer
 @attribute [Authorize]
@@ -25,96 +26,13 @@ else
     <p class="text-muted">@_project.Description</p>
 
     <div class="mt-4">
-        <h4>Tasks</h4>
-
-        <EditForm Model="_newTask" OnValidSubmit="CreateTaskAsync">
-            <DataAnnotationsValidator />
-            <div class="row g-2 align-items-start">
-                <div class="col-12 col-md-4">
-                    <InputText @bind-Value="_newTask.Title" class="form-control" placeholder="Task name" @oninput="TaskTitleChanged"/>
-                    <ValidationMessage For="@(() => _newTask.Title)" />
-                </div>
-                <div class="col-12 col-md-5">
-                    <InputTextArea @bind-Value="_newTask.DescriptionMarkdown" class="form-control" placeholder="Short description (Markdown is optional)" />
-                </div>
-                <div class="col-12 col-md-2">
-                    <InputSelect @bind-Value="_newTask.Status" class="form-select">
-                        @foreach (var s in Enum.GetValues<TaskStatus>())
-                        {
-                            <option value="@s">@s</option>
-                        }
-                    </InputSelect>
-                </div>
-                <div class="col-12 col-md-1 d-grid">
-                    <button class="btn btn-primary" type="submit" disabled="@(_creating || _createTaskButtonDisabled)">Create</button>
-                </div>
-            </div>
-            @if (!string.IsNullOrWhiteSpace(_taskError)) { <div class="text-danger mt-2">@_taskError</div> }
-        </EditForm>
-
-        <hr class="my-3" />
-
         @if (_tasks.Count == 0)
         {
             <p class="text-muted">There are no tasks yet.</p>
         }
         else
         {
-            <div class="list-group">
-                @foreach (var t in _tasks.OrderByDescending(x => x.CreatedAtUtc))
-                {
-                    var canModify = _isOwner || t.AuthorId == _currentUserId;
-                    <div class="list-group-item">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div class="me-3 flex-grow-1">
-                                @if (_editId == t.Id)
-                                {
-                                    <EditForm Model="_editTask" OnValidSubmit="() => UpdateTaskAsync(t)">
-                                        <DataAnnotationsValidator />
-                                        <InputText @bind-Value="_editTask.Title" class="form-control mb-2" />
-                                        <ValidationMessage For="@(() => _editTask.Title)" />
-                                        <InputTextArea @bind-Value="_editTask.DescriptionMarkdown" class="form-control mb-2" rows="3" />
-                                        <div class="d-flex gap-2">
-                                            <button class="btn btn-success btn-sm" type="submit">Save</button>
-                                            <button class="btn btn-outline-secondary btn-sm" type="button" @onclick="CancelEdit">Cancel</button>
-                                        </div>
-                                    </EditForm>
-                                }
-                                else
-                                {
-                                    <div class="fw-semibold">@t.Title</div>
-                                    @if (!string.IsNullOrWhiteSpace(t.DescriptionMarkdown))
-                                    {
-                                        <div class="text-muted small">@t.DescriptionMarkdown</div>
-                                    }
-                                    <div class="text-muted small">Author: @(_usersById.TryGetValue(t.AuthorId, out var a) ? a : t.AuthorId), @t.CreatedAtUtc.ToLocalTime()</div>
-                                }
-                            </div>
-
-                            <div class="d-flex flex-column align-items-end" style="min-width:220px">
-                                <!-- Status: any member can change -->
-                                <div class="mb-2">
-                                    <select class="form-select form-select-sm" value="@t.Status"
-                                            @onchange="async e => await ChangeStatusAsync(t, Enum.Parse<TaskStatus>(e.Value?.ToString() ?? nameof(TaskStatus.Backlog)))">
-                                        @foreach (var s in Enum.GetValues<TaskStatus>())
-                                        {
-                                            <option value="@s" selected="@(s == t.Status)">@s</option>
-                                        }
-                                    </select>
-                                </div>
-
-                                @if (canModify)
-                                {
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-secondary" @onclick="() => BeginEdit(t)">Edit</button>
-                                        <button class="btn btn-outline-danger" @onclick="() => DeleteTaskAsync(t)">Delete</button>
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                    </div>
-                }
-            </div>
+            <TaskKanban ProjectId="ProjectId" @ref="_kanban"/>
         }
     </div>
 

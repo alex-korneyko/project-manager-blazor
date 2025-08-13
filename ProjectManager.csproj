@@ -16,6 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Components\Modals\" />
       <Folder Include="Data\Migrations\" />
     </ItemGroup>
 

@@ -1,0 +1,86 @@
+﻿
+<div class="kanban">
+    @foreach (var col in _columnsOrder)
+    {
+        <div class="kanban-col @( _hover[col] ? "drop-target" : null )"
+             @ondragenter="@(() => OnDragEnter(col))"
+             @ondragleave="@(() => OnDragLeave(col))"
+             @ondragover="@(() => { })"
+             @ondragover:preventDefault="true"
+             @ondragenter:preventDefault="true"
+             @ondrop="@(() => OnDrop(col))"
+             @ondrop:preventDefault="true">
+            <div class="kanban-col-header">
+                <span class="badge bg-secondary">@col</span>
+                <span class="count">@(_columns[col].Count)</span>
+            </div>
+
+            @if (_columns[col].Count == 0)
+            {
+                <div class="kanban-empty">Move task here</div>
+            }
+
+            @foreach (var t in _columns[col])
+            {
+                var busy = _busyTasks.Contains(t.Id);
+
+                <TaskKanbanCard
+                    @key="t.Id"
+                    Task="t"
+                    Class="@(busy ? "busy" : null)"
+                    draggable="true"
+                    @ondragstart="@(() => OnDragStart(t.Id))"/>
+            }
+
+            <div class="kanban-col-footer">
+                <button type="button" class="btn btn-light btn-sm add-btn"
+                        title="Create task"
+                        @onclick="() => OpenCreateModalFor(col)">
+                    <span class="plus">+</span>
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@if (!string.IsNullOrWhiteSpace(_error))
+{
+    <div class="alert alert-danger mt-3">@_error</div>
+}
+
+@if (_showModal)
+{
+    <div class="modal-backdrop-kanban" @onclick="CloseModal"></div>
+    <div class="modal-dialog-kanban" role="dialog" aria-modal="true">
+        <div class="modal-header-kanban">
+            <h5 class="modal-title-kanban">Новая задача — @_modalStatus</h5>
+            <button type="button" class="btn-close-kanban" @onclick="CloseModal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body-kanban">
+            <EditForm Model="_modalModel" OnValidSubmit="CreateTaskInModalAsync">
+                <DataAnnotationsValidator />
+                <div class="mb-2">
+                    <label class="form-label">Title</label>
+                    <InputText @bind-Value="_modalModel.Title" class="form-control" />
+                    <ValidationMessage For="@(() => _modalModel.Title)" />
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Description (Markdown, optional)</label>
+                    <InputTextArea @bind-Value="_modalModel.DescriptionMarkdown" class="form-control" rows="4" />
+                </div>
+                <div class="d-flex gap-2 justify-content-end mt-3">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="CloseModal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" disabled="@_submitting">Create</button>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(_modalError))
+                {
+                    <div class="text-danger mt-2">@_modalError</div>
+                }
+            </EditForm>
+        </div>
+    </div>
+}
+
+@code {
+    
+}

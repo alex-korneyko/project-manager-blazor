@@ -49,3 +49,43 @@ h1:focus {
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
+
+/*Simple Modal*/
+
+.modal-backdrop-kanban {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .35);
+    z-index: 1000;
+}
+
+.modal-dialog-kanban {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border-radius: .5rem;
+    width: min(600px, 92vw);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .2);
+    z-index: 1001;
+}
+
+.modal-header-kanban {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .75rem 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-body-kanban {
+    padding: 1rem;
+}
+
+.btn-close-kanban {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    line-height: 1;
+}
