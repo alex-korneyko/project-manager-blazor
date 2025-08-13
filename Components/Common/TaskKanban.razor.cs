@@ -22,6 +22,13 @@ public partial class TaskKanban : ComponentBase
     private Guid? _draggingId;
     private string? _error;
 
+    // --- Modal state ---
+    private bool _showModal;
+    private TaskStatus _modalStatus;
+    private TaskEditModel _modalModel = new();
+    private string? _modalError;
+    private bool _submitting;
+
     [Inject] private ApplicationDbContext Db { get; set; } = null!;
     [Inject] private IAuthorizationService Authz { get; set; } = null!;
     [Inject] private AuthenticationStateProvider AuthState { get; set; } = null!;
@@ -66,8 +73,6 @@ public partial class TaskKanban : ComponentBase
 
     private async Task OnDrop(TaskStatus target)
     {
-        Console.WriteLine($"Drop {target.ToString()}");
-
         if (_draggingId is null) return;
 
         try
@@ -126,5 +131,82 @@ public partial class TaskKanban : ComponentBase
         _columns[t.Status].RemoveAll(x => x.Id == t.Id);
         t.Status = target; // локально меняем (оптимизм)
         _columns[target].Insert(0, t);
+    }
+
+    // --- Modal helpers ---
+    private void OpenCreateModalFor(TaskStatus target)
+    {
+        _modalStatus = target;
+        _modalModel = new TaskEditModel();
+        _modalError = null;
+        _showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        _showModal = false;
+        _modalError = null;
+    }
+
+    private async Task CreateTaskInModalAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_modalModel.Title)) return;
+
+        try
+        {
+            _submitting = true;
+            _modalError = null;
+
+            var user = (await AuthState.GetAuthenticationStateAsync()).User;
+
+            var project = await Db.Projects.FirstOrDefaultAsync(p => p.Id == ProjectId);
+            if (project is null)
+            {
+                _modalError = "Project not found."; return;
+            }
+
+            var memberResult = await Authz.AuthorizeAsync(user, project, "IsProjectMember");
+            if (!memberResult.Succeeded)
+            {
+                _modalError = "No rights for task creation."; return;
+            }
+
+            var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
+
+            var task = new TaskItem
+            {
+                Id = Guid.NewGuid(),
+                ProjectId = ProjectId,
+                Title = _modalModel.Title.Trim(),
+                DescriptionMarkdown = string.IsNullOrWhiteSpace(_modalModel.DescriptionMarkdown) ? null : _modalModel.DescriptionMarkdown!.Trim(),
+                Status = _modalStatus,
+                AuthorId = userId,
+                CreatedAtUtc = DateTime.UtcNow
+            };
+
+            Db.Tasks.Add(task);
+            await Db.SaveChangesAsync();
+
+            _columns[_modalStatus].Insert(0, task);
+
+            CloseModal();
+        }
+        catch (Exception ex)
+        {
+            Log.LogError(ex, "Create task modal failed");
+            _modalError = "Create task modal failed";
+        }
+        finally
+        {
+            _submitting = false;
+            StateHasChanged();
+        }
+    }
+
+    private sealed class TaskEditModel
+    {
+        [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.MinLength(2)]
+        public string Title { get; set; } = string.Empty;
+        public string? DescriptionMarkdown { get; set; }
     }
 }

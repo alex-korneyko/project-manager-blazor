@@ -26,35 +26,6 @@ else
     <p class="text-muted">@_project.Description</p>
 
     <div class="mt-4">
-        <h4>Tasks</h4>
-
-        <EditForm Model="_newTask" OnValidSubmit="CreateTaskAsync">
-            <DataAnnotationsValidator />
-            <div class="row g-2 align-items-start">
-                <div class="col-12 col-md-4">
-                    <InputText @bind-Value="_newTask.Title" class="form-control" placeholder="Task name" @oninput="TaskTitleChanged"/>
-                    <ValidationMessage For="@(() => _newTask.Title)" />
-                </div>
-                <div class="col-12 col-md-5">
-                    <InputTextArea @bind-Value="_newTask.DescriptionMarkdown" class="form-control" placeholder="Short description (Markdown is optional)" />
-                </div>
-                <div class="col-12 col-md-2">
-                    <InputSelect @bind-Value="_newTask.Status" class="form-select">
-                        @foreach (var s in Enum.GetValues<TaskStatus>())
-                        {
-                            <option value="@s">@s</option>
-                        }
-                    </InputSelect>
-                </div>
-                <div class="col-12 col-md-1 d-grid">
-                    <button class="btn btn-primary" type="submit" disabled="@(_creating || _createTaskButtonDisabled)">Create</button>
-                </div>
-            </div>
-            @if (!string.IsNullOrWhiteSpace(_taskError)) { <div class="text-danger mt-2">@_taskError</div> }
-        </EditForm>
-
-        <hr class="my-3" />
-
         @if (_tasks.Count == 0)
         {
             <p class="text-muted">There are no tasks yet.</p>

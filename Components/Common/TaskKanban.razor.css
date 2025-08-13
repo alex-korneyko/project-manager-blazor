@@ -30,3 +30,31 @@
     border: 2px dashed #e5e7eb;
     border-radius: .5rem;
 }
+
+.kanban-col-footer {
+    position: sticky;
+    bottom: 0;
+    margin-top: .5rem;
+    display: flex;
+    justify-content: end;
+}
+
+.add-btn {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    border: 1px solid #cbd5e1;
+    background-color: #d8e2ef;
+}
+
+.add-btn:hover {
+    background-color: #e6eef3;
+}
+
+.add-btn .plus {
+    font-weight: 700;
+    font-size: 1.1rem;
+    /*line-height: 1;*/
+    position: relative;
+    top: -2px;
+}
