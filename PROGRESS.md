@@ -87,6 +87,8 @@
     - **Drag & Drop** (HTML5) changes `Status` with optimistic UI update + DB save.
     - **“+” button in each column** opens **modal** to create a task directly in that column.
     - Validation: Title required; buttons disabled while submitting.
+    - **NewTaskModal**: extracted to a reusable component (implements `IModal<TaskItem>`); opens with initial status per column and **persists** the task, then emits `OnModalActionSucceeded(task)`.
+    - **Blazor-native event handling**: `@ondragover:preventDefault="true"` (with no-op handler) and `@ondragenter:preventDefault="true"` ensure reliable drops across browsers.
 
 - **Data flow**
     - On create: set `AuthorId`, `CreatedAtUtc`, `ProjectId`, initial `Status` from column.
@@ -94,6 +96,7 @@
 **PRs**
 - Iteration 4 Tasks CRUD & Statuses: **PR #3**
 - Mini‑Kanban & modal create: **PR #4**
+- 'New Task' modal window: **PR #5**
 
 **Manual test checklist**
 1. Owner creates tasks; list/kanban show newest first in each column.
@@ -107,6 +110,10 @@
 - Consider DB index `Tasks(ProjectId, CreatedAtUtc)`.
 - Later: markdown preview, toasts, drag animations.
 
+**Result**
+- Create tasks directly from any Kanban column via the “+” button → modal.
+- Smooth drag&drop between statuses with immediate DB persistence.
+- Clear separation of concerns: Kanban (board), TaskCard (render), NewTaskModal (create).
 ---
 
 ## Next — Iteration 5 (Planned): Attachments & Images
