@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
+using ProjectManager.Components.Modals;
 using ProjectManager.Data;
 using ProjectManager.Domain.Entities;
 using TaskStatus = ProjectManager.Domain.Entities.TaskStatus;
@@ -10,8 +11,6 @@ namespace ProjectManager.Components.Common;
 
 public partial class TaskKanban : ComponentBase
 {
-    [Parameter] public Guid ProjectId { get; set; }
-
     private readonly TaskStatus[] _columnsOrder =
     [
         TaskStatus.Backlog, TaskStatus.InProgress, TaskStatus.Blocked, TaskStatus.Done
@@ -23,30 +22,26 @@ public partial class TaskKanban : ComponentBase
         { TaskStatus.Blocked, false }, { TaskStatus.Done, false }
     };
 
+    private Project? _currentProject;
     private readonly Dictionary<TaskStatus, List<TaskItem>> _columns = new();
     private readonly HashSet<Guid> _busyTasks = new();
-    private Dictionary<string, string> _usersById = new();
     private Guid? _draggingId;
     private string? _error;
 
-    // --- Modal state ---
-    private bool _showModal;
-    private TaskStatus _modalStatus;
-    private TaskEditModel _modalModel = new();
-    private string? _modalError;
-    private bool _submitting;
+    private NewTaskModal _newTaskModal = null!;
 
     [Inject] private ApplicationDbContext Db { get; set; } = null!;
     [Inject] private IAuthorizationService Authz { get; set; } = null!;
     [Inject] private AuthenticationStateProvider AuthState { get; set; } = null!;
     [Inject] private ILogger<TaskKanban> Log { get; set; } = null!;
 
+    [Parameter] public Guid ProjectId { get; set; }
+
     protected override async Task OnParametersSetAsync()
     {
         await ReloadAsync();
     }
 
-    // Позволяет странице-родителю вручную обновить доску (после создания задачи).
     public async Task ReloadAsync()
     {
         _error = null;
@@ -54,20 +49,18 @@ public partial class TaskKanban : ComponentBase
         foreach (var s in _columnsOrder)
             _columns[s] = new List<TaskItem>();
 
-        var tasks = await Db.Tasks
-            .Where(t => t.ProjectId == ProjectId)
-            .OrderByDescending(t => t.CreatedAtUtc)
-            .ToListAsync();
+        _currentProject = await Db.Projects
+            .Include(p => p.Tasks)
+            .FirstOrDefaultAsync(p => p.Id == ProjectId);
 
-        foreach (var t in tasks)
+        if (_currentProject is null)
+        {
+            _error = "Project not found";
+            return;
+        }
+
+        foreach (var t in _currentProject.Tasks.OrderByDescending(t => t.CreatedAtUtc))
             _columns[t.Status].Add(t);
-
-        var authorIds = tasks.Select(t => t.AuthorId).Distinct().ToList();
-        var users = await Db.Users
-            .Where(u => authorIds.Contains(u.Id))
-            .Select(u => new { u.Id, u.Email })
-            .ToListAsync();
-        _usersById = users.ToDictionary(x => x.Id, x => x.Email ?? x.Id);
 
         StateHasChanged();
     }
@@ -87,14 +80,13 @@ public partial class TaskKanban : ComponentBase
             var t = FindTask(_draggingId.Value);
             if (t is null) return;
 
-            if (t.Status == target) return; // ничего не меняем
+            if (t.Status == target) return;
 
-            // Авторизация: менять статус может любой участник проекта
             var user = (await AuthState.GetAuthenticationStateAsync()).User;
             var auth = await Authz.AuthorizeAsync(user, t, "IsProjectMember");
             if (!auth.Succeeded)
             {
-                _error = "Нет прав для смены статуса.";
+                _error = "No rights for the status change.";
                 return;
             }
 
@@ -110,8 +102,7 @@ public partial class TaskKanban : ComponentBase
         catch (Exception ex)
         {
             Log.LogError(ex, "Kanban drop failed");
-            _error = "Не удалось изменить статус.";
-            // Попробуем жестко перечитать модель (на случай рассинхронизации)
+            _error = "Kanban drop failed.";
             await ReloadAsync();
         }
         finally
@@ -147,80 +138,16 @@ public partial class TaskKanban : ComponentBase
     // --- Modal helpers ---
     private void OpenCreateModalFor(TaskStatus target)
     {
-        _modalStatus = target;
-        _modalModel = new TaskEditModel();
-        _modalError = null;
-        _showModal = true;
+        _newTaskModal.OpenModal(target);
     }
 
-    private void CloseModal()
+    private void OnTaskCreated(TaskItem task)
     {
-        _showModal = false;
-        _modalError = null;
-    }
-
-    private async Task CreateTaskInModalAsync()
-    {
-        if (string.IsNullOrWhiteSpace(_modalModel.Title)) return;
-
-        try
-        {
-            _submitting = true;
-            _modalError = null;
-
-            var user = (await AuthState.GetAuthenticationStateAsync()).User;
-
-            var project = await Db.Projects.FirstOrDefaultAsync(p => p.Id == ProjectId);
-            if (project is null)
-            {
-                _modalError = "Project not found."; return;
-            }
-
-            var memberResult = await Authz.AuthorizeAsync(user, project, "IsProjectMember");
-            if (!memberResult.Succeeded)
-            {
-                _modalError = "No rights for task creation."; return;
-            }
-
-            var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
-
-            var task = new TaskItem
-            {
-                Id = Guid.NewGuid(),
-                ProjectId = ProjectId,
-                Title = _modalModel.Title.Trim(),
-                DescriptionMarkdown = string.IsNullOrWhiteSpace(_modalModel.DescriptionMarkdown) ? null : _modalModel.DescriptionMarkdown!.Trim(),
-                Status = _modalStatus,
-                AuthorId = userId,
-                CreatedAtUtc = DateTime.UtcNow
-            };
-
-            Db.Tasks.Add(task);
-            await Db.SaveChangesAsync();
-
-            _columns[_modalStatus].Insert(0, task);
-
-            CloseModal();
-        }
-        catch (Exception ex)
-        {
-            Log.LogError(ex, "Create task modal failed");
-            _modalError = "Create task modal failed";
-        }
-        finally
-        {
-            _submitting = false;
-            StateHasChanged();
-        }
+        _columns[task.Status].Insert(0, task);
+        _newTaskModal.CloseModal();
+        StateHasChanged();
     }
 
     private void OnDragEnter(TaskStatus col) => _hover[col] = true;
     private void OnDragLeave(TaskStatus col) => _hover[col] = false;
-
-    private sealed class TaskEditModel
-    {
-        [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.MinLength(2)]
-        public string Title { get; set; } = string.Empty;
-        public string? DescriptionMarkdown { get; set; }
-    }
 }
