@@ -8,7 +8,7 @@ using TaskStatus = ProjectManager.Domain.Entities.TaskStatus;
 
 namespace ProjectManager.Components.Modals;
 
-public partial class NewTaskModal : ComponentBase, IModal<TaskItem>
+public partial class NewTaskModal : ComponentBase, IModal<TaskStatus, TaskItem>
 {
     private readonly TaskEditModel _modalModel = new();
     private bool _showModal;
@@ -29,11 +29,6 @@ public partial class NewTaskModal : ComponentBase, IModal<TaskItem>
     {
         _showModal = true;
         _modalStatus = taskStatus;
-    }
-
-    public void OpenModal()
-    {
-        _showModal = true;
     }
 
     public void CloseModal()
