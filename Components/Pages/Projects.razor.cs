@@ -22,8 +22,6 @@ public partial class Projects : ComponentBase
     private ClaimsPrincipal _user;
     private bool _loading = true;
     private List<Project>? _projects = new();
-    private string _newProjectName = "";
-    private string? _newProjectDesc = "";
     private string? _error;
     private NewProjectModal _newProjectModal = null!;
 
@@ -45,42 +43,6 @@ public partial class Projects : ComponentBase
         _loading = false;
 
         await base.OnInitializedAsync();
-    }
-
-    private async Task CreateProject()
-    {
-        _error = null;
-        try
-        {
-            var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
-            var userId = user.GetUserId();
-
-            var project = new Project()
-            {
-                Id = Guid.NewGuid(),
-                Name = _newProjectName.Trim(),
-                Description = string.IsNullOrWhiteSpace(_newProjectDesc) ? null : _newProjectDesc.Trim(),
-                OwnerId = userId!
-            };
-
-            DbContext.Projects.Add(project);
-            await DbContext.SaveChangesAsync();
-            _projects!.Add(project);
-            _newProjectName = "";
-            _newProjectDesc = null;
-
-            // StateHasChanged();
-        }
-        catch (Exception e)
-        {
-            Logger.LogError(e, "Failed to create project");
-            _error = "Failed to create project";
-        }
-    }
-
-    private void NewProjectNameOnInput(ChangeEventArgs args)
-    {
-        _newProjectName = args.Value?.ToString() ?? "";
     }
 
     private async Task OnProjectCreated(Project project)
