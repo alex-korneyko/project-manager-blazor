@@ -25,7 +25,7 @@ public partial class NewTaskModal : ComponentBase, IModal<TaskStatus, TaskItem>
     [Parameter] public EventCallback<string> OnModalActionFailed { get; set; }
     [Parameter] public Project? Project { get; set; }
 
-    public void OpenModal(TaskStatus taskStatus)
+    public async Task OpenModalAsync(TaskStatus taskStatus)
     {
         _showModal = true;
         _modalStatus = taskStatus;

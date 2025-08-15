@@ -266,7 +266,7 @@ public partial class ProjectDetails : ComponentBase
         try
         {
             var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
-            var canModify = await AuthorizationService.AuthorizeAsync(user, t, "CanModifyTask");
+            var canModify = await AuthorizationService.AuthorizeAsync(user, t, "CanTaskModify");
             if (!canModify.Succeeded) { _taskError = "No rights to task delete."; return; }
 
             DbContext.Tasks.Remove(t);

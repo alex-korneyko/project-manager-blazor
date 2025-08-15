@@ -1,0 +1,32 @@
+﻿@using ProjectManager.Components.Common
+
+@if (_show)
+{
+    <div class="pm-modal-backdrop" @onclick="CloseModal"></div>
+    <div class="pm-modal-dialog">
+        <div class="pm-modal-header">
+            <h5>Edit Task</h5>
+            <button class="pm-modal-btn-close" @onclick="CloseModal">X</button>
+        </div>
+        <div class="pm-modal-body">
+            @if (_task is null) { <p>Loading…</p> }
+            else
+            {
+                <EditForm Model="_model" OnValidSubmit="Save">
+                    <DataAnnotationsValidator />
+                    <InputText @bind-Value="_model.Title" class="form-control mb-2" />
+                    <InputTextArea @bind-Value="_model.DescriptionMarkdown" class="form-control mb-3" rows="4" />
+                    <button class="btn btn-primary" disabled="@(!_canModify)">Save</button>
+                </EditForm>
+
+                <hr />
+                <TaskAttachments Task="@_task" />
+            }
+            @if (_error is not null) { <div class="text-danger mt-2">@_error</div> }
+        </div>
+    </div>
+}
+
+@code {
+    
+}

@@ -1,0 +1,38 @@
+﻿<div class="attachments">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Attachments</h6>
+        @if (_canModify)
+        {
+            <InputFile OnChange="@(OnFilesSelected)" multiple />
+        }
+    </div>
+
+    @if (_error is not null) { <div class="text-danger">@_error</div> }
+
+    @if (_items.Count == 0)
+    {
+        <div class="text-muted small">No attachments yet.</div>
+    }
+    else
+    {
+        <ul class="list-group">
+            @foreach (var a in _items.OrderByDescending(x => x.UploadedAtUtc))
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <a href="@DownloadUrl(a)" target="_blank">@a.FileName</a>
+                        <div class="small text-muted">@a.ContentType • @FormatSize(a.SizeBytes) • @a.UploadedAtUtc.ToLocalTime()</div>
+                    </div>
+                    @if (_canModify)
+                    {
+                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteAsync(a)">Delete</button>
+                    }
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    
+}

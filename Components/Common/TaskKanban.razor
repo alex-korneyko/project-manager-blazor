@@ -30,13 +30,14 @@
                     Task="t"
                     Class="@(busy ? "busy" : null)"
                     draggable="true"
-                    @ondragstart="@(() => OnDragStart(t.Id))"/>
+                    @ondragstart="@(() => OnDragStart(t.Id))"
+                    @onclick="@(() => _editTaskModal.OpenModalAsync(t.Id))"/>
             }
 
             <div class="kanban-col-footer">
                 <button type="button" class="btn btn-light btn-sm add-btn"
                         title="Create task"
-                        @onclick="() => OpenCreateModalFor(col)">
+                        @onclick="async () => await _newTaskModal.OpenModalAsync(col)">
                     <span class="plus">+</span>
                 </button>
             </div>
@@ -53,7 +54,9 @@
     @ref="_newTaskModal"
     Project="_currentProject"
     OnModalActionSucceeded="OnTaskCreated"
-    />
+/>
+
+<EditTaskModal @ref="_editTaskModal" OnModalActionSucceeded="OnTaskSaved"/>
 
 @code {
     

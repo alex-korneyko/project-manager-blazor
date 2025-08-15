@@ -12,7 +12,7 @@ public class TaskAttachment
     public string FileName { get; set; } = default!;
     public string StoredPath { get; set; } = default!; // относительный путь в сторадже
     public long SizeBytes { get; set; }
-    public string ContentType { get; set; } = default!;
+    public string ContentType { get; set; } = "application/octet-stream";
 
     public string UploaderId { get; set; } = default!;
     public ApplicationUser Uploader { get; set; } = default!;

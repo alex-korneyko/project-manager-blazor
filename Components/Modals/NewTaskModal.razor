@@ -1,12 +1,12 @@
 ﻿@if (_showModal)
 {
-    <div class="modal-backdrop-kanban" @onclick="CloseModal"></div>
-    <div class="modal-dialog-kanban" role="dialog" aria-modal="true">
-        <div class="modal-header-kanban">
+    <div class="pm-modal-backdrop" @onclick="CloseModal"></div>
+    <div class="pm-modal-dialog" role="dialog" aria-modal="true">
+        <div class="pm-modal-header">
             <h5 class="modal-title-kanban">Новая задача — @_modalStatus</h5>
-            <button type="button" class="btn-close-kanban" @onclick="CloseModal" aria-label="Close"></button>
+            <button type="button" class="pm-modal-btn-close" @onclick="CloseModal" aria-label="Close"></button>
         </div>
-        <div class="modal-body-kanban">
+        <div class="pm-modal-body">
             <EditForm Model="_modalModel" OnValidSubmit="CreateTaskInModalAsync">
                 <DataAnnotationsValidator />
                 <div class="mb-2">

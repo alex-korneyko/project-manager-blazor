@@ -7,7 +7,7 @@ public interface IModal<in TModalData, TModalResult>
     public EventCallback<TModalResult> OnModalActionSucceeded { get; set; }
     public EventCallback<string> OnModalActionFailed { get; set; }
 
-    void OpenModal(TModalData? modalData = default);
+    Task OpenModalAsync(TModalData? modalData = default);
     void CloseModal();
 }
 
@@ -16,6 +16,6 @@ public interface IModal<TModalResult>
     public EventCallback<TModalResult> OnModalActionSucceeded { get; set; }
     public EventCallback<string> OnModalActionFailed { get; set; }
 
-    void OpenModal();
+    Task OpenModalAsync();
     void CloseModal();
 }

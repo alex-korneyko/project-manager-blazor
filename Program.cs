@@ -1,15 +1,11 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using ProjectManager.Authorization;
-using ProjectManager.Authorization.Handlers;
+using ProjectManager.Common.Extensions;
 using ProjectManager.Components;
 using ProjectManager.Components.Account;
 using ProjectManager.Data;
 using ProjectManager.Data.Models;
-using ProjectManager.Services.Security;
+using ProjectManager.Services.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,53 +15,17 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-// Add services to the container.
+builder.Services.AddApplicationIdentity();
 
-builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddScoped<IdentityUserAccessor>();
-builder.Services.AddScoped<IdentityRedirectManager>();
-builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
-
-builder.Services.AddIdentityCore<ApplicationUser>(options =>
-    {
-        options.User.RequireUniqueEmail = true;
-        options.Password.RequireDigit = false;
-        options.Password.RequireNonAlphanumeric = false;
-        options.Password.RequireUppercase = false;
-        options.Password.RequiredLength = 6;
-    })
-    .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddSignInManager()
-    .AddDefaultTokenProviders();
-
-builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultScheme = IdentityConstants.ApplicationScheme;
-        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-    })
-    .AddIdentityCookies();
-
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("IsProjectMember", policy => policy.Requirements.Add(new ProjectMemberRequirement()));
-    options.AddPolicy("IsProjectOwner", policy => policy.Requirements.Add(new ProjectOwnerRequirement()));
-    options.AddPolicy("IsCommentAuthor", policy => policy.Requirements.Add(new CommentAuthorRequirement()));
-    options.AddPolicy("CanTaskModify", policy => policy.Requirements.Add(new TaskModifyRequirement()));
-});
+builder.Services.AddControllers();
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
-builder.Services.AddScoped<IProjectAccessService, ProjectAccessService>();
-builder.Services.AddScoped<IAuthorizationHandler, ProjectMemberForProjectHandler>();
-builder.Services.AddScoped<IAuthorizationHandler, ProjectMemberForTaskHandler>();
-builder.Services.AddScoped<IAuthorizationHandler, ProjectOwnerForProjectHandler>();
-builder.Services.AddScoped<IAuthorizationHandler, ProjectOwnerForTaskHandler>();
-builder.Services.AddScoped<IAuthorizationHandler, CommentAuthorHandler>();
-builder.Services.AddScoped<IAuthorizationHandler, TaskModifyHandler>();
-
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection("Storage"));
+builder.Services.AddSingleton<IFileStorageService, LocalFileStorageService>();
 
 var app = builder.Build();
 
@@ -110,29 +70,15 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
 
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
+
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
-
-app.MapPost("/api/projects/{projectId:guid}/invite", async (
-        Guid projectId,
-        string userToInviteId,
-        ApplicationDbContext db,
-        IAuthorizationService auth,
-        ClaimsPrincipal user,
-        CancellationToken ct) =>
-    {
-        var project = await db.Projects.FindAsync([projectId], ct);
-        if (project is null) return Results.NotFound();
-
-        var result = await auth.AuthorizeAsync(user, project, "IsProjectOwner");
-        if (!result.Succeeded) return Results.Forbid();
-
-        // ... добавить участника ...
-        return Results.Ok();
-    })
-    .RequireAuthorization();
 
 app.Run();

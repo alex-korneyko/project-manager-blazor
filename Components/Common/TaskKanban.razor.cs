@@ -29,6 +29,7 @@ public partial class TaskKanban : ComponentBase
     private string? _error;
 
     private NewTaskModal _newTaskModal = null!;
+    private EditTaskModal _editTaskModal = null!;
 
     [Inject] private ApplicationDbContext Db { get; set; } = null!;
     [Inject] private IAuthorizationService Authz { get; set; } = null!;
@@ -135,12 +136,6 @@ public partial class TaskKanban : ComponentBase
         _columns[target].Insert(0, t);
     }
 
-    // --- Modal helpers ---
-    private void OpenCreateModalFor(TaskStatus target)
-    {
-        _newTaskModal.OpenModal(target);
-    }
-
     private void OnTaskCreated(TaskItem task)
     {
         _columns[task.Status].Insert(0, task);
@@ -150,4 +145,9 @@ public partial class TaskKanban : ComponentBase
 
     private void OnDragEnter(TaskStatus col) => _hover[col] = true;
     private void OnDragLeave(TaskStatus col) => _hover[col] = false;
+
+    private async Task OnTaskSaved(TaskItem task)
+    {
+        await ReloadAsync();
+    }
 }
