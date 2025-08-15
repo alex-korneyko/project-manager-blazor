@@ -6,11 +6,6 @@
 @attribute [Authorize]
 @page "/projects/{ProjectId:guid}"
 
-@inject NavigationManager NavigationManager
-
-<button class="btn btn-primary mt-2" @onclick="@(() => NavigationManager.NavigateTo("/projects/"))">Back to Projects list</button>
-<hr class="my-3" />
-
 <h2 class="mb-3">@_project?.Name</h2>
 
 @if (_loading)

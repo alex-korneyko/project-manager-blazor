@@ -19,4 +19,10 @@
       <Folder Include="Data\Migrations\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Update="Components\Common\ToolBarService.cs">
+        <DependentUpon>ToolBar.razor</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
 </Project>

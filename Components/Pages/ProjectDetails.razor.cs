@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Common.Security;
 using ProjectManager.Components.Common;
+using ProjectManager.Components.UiModels;
 using ProjectManager.Data;
 using ProjectManager.Data.Models;
 using ProjectManager.Domain.Entities;
@@ -44,6 +45,22 @@ public partial class ProjectDetails : ComponentBase
     [Inject] private UserManager<ApplicationUser> UserManager { get; set; } = null!;
     [Inject] private ApplicationDbContext DbContext { get; set; } = null!;
     [Inject] private ILogger<ProjectDetails> Logger { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+    [Inject] private ToolBarService ToolBarService { get; set; } = null!;
+
+    protected override void OnInitialized()
+    {
+        ToolBarService.InserTools(new List<ToolBarButtonModel>
+        {
+            new()
+            {
+                Title = "Back to projects list",
+                Class = "btn btn-primary",
+                ClickAction = () => { NavigationManager.NavigateTo("/projects/"); }
+            }
+        });
+        base.OnInitialized();
+    }
 
     protected override async Task OnParametersSetAsync()
     {

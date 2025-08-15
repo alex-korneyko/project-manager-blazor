@@ -1,0 +1,18 @@
+﻿
+@rendermode InteractiveServer
+
+<div class="top-row px-4">
+    @foreach(var tool in _tools)
+    {
+        <button
+            type="button"
+            class="@(tool.Class ?? "btn btn-primary")"
+            @onclick="@(() => { tool.ClickAction?.Invoke(); })">
+            @tool.Title
+        </button>
+    }
+</div>
+
+@code {
+    
+}

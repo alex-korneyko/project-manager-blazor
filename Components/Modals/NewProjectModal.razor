@@ -1,0 +1,41 @@
+﻿@if (_showModal)
+{
+    <div class="pm-modal-backdrop" @onclick="CloseModal"></div>
+    <div class="pm-modal-dialog" role="dialog" aria-modal="true">
+        <div class="pm-modal-header">
+            <h5 class="modal-title-kanban">New project</h5>
+            <button type="button" class="pm-modal-btn-close" @onclick="CloseModal" aria-label="Close"></button>
+        </div>
+        <div class="pm-modal-body">
+            <EditForm Model="_modalModel" OnValidSubmit="CreateProject">
+                <DataAnnotationsValidator />
+                <div class="mb-2">
+                    <label class="form-label">Title</label>
+                    <InputText @bind-Value="_modalModel.Title" class="form-control" />
+                    <ValidationMessage For="@(() => _modalModel.Title)" />
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Description (Markdown, optional)</label>
+                    <InputTextArea @bind-Value="_modalModel.DescriptionMarkdown" class="form-control" rows="4" />
+                </div>
+                <div class="d-flex gap-2 justify-content-end mt-3">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="CloseModal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" disabled="@_submitting">Create</button>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(_modalError))
+                {
+                    <div class="text-danger mt-2">@_modalError</div>
+                }
+            </EditForm>
+        </div>
+    </div>
+}
+
+@code {
+
+}
+
+
+@code {
+    
+}

@@ -1,4 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Authorization
+@using ProjectManager.Components.Modals
 
 @rendermode InteractiveServer
 
@@ -15,20 +16,20 @@
 }
 else
 {
-    <div class="mb-4">
-        <input class="form-control" placeholder="Project name" @oninput="NewProjectNameOnInput"/>
-        <textarea class="form-control mt-2" placeholder="Description" @bind="_newProjectDesc"></textarea>
-        <button class="btn btn-primary mt-2"
-                @onclick="CreateProject"
-                disabled="@(string.IsNullOrWhiteSpace(_newProjectName) || _newProjectName.Length < 2)">
-            Create project
-        </button>
-
-        @if (!string.IsNullOrWhiteSpace(_error))
-        {
-            <div class="text-danger mt-2">@_error</div>
-        }
-    </div>
+    @* <div class="mb-4"> *@
+    @*     <input class="form-control" placeholder="Project name" @oninput="NewProjectNameOnInput"/> *@
+    @*     <textarea class="form-control mt-2" placeholder="Description" @bind="_newProjectDesc"></textarea> *@
+    @*     <button class="btn btn-primary mt-2" *@
+    @*             @onclick="CreateProject" *@
+    @*             disabled="@(string.IsNullOrWhiteSpace(_newProjectName) || _newProjectName.Length < 2)"> *@
+    @*         Create project *@
+    @*     </button> *@
+    @* *@
+    @*     @if (!string.IsNullOrWhiteSpace(_error)) *@
+    @*     { *@
+    @*         <div class="text-danger mt-2">@_error</div> *@
+    @*     } *@
+    @* </div> *@
 
     @if (_projects?.Count == 0)
     {
@@ -51,6 +52,7 @@ else
     }
 }
 
+<NewProjectModal @ref="_newProjectModal" OnModalActionSucceeded="OnProjectCreated"/>
 
 @code {
     

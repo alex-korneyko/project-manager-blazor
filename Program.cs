@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using ProjectManager.Common.Extensions;
 using ProjectManager.Components;
 using ProjectManager.Components.Account;
+using ProjectManager.Components.Common;
 using ProjectManager.Data;
 using ProjectManager.Data.Models;
 using ProjectManager.Services.Storage;
@@ -26,6 +27,8 @@ builder.Services.AddRazorComponents()
 
 builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection("Storage"));
 builder.Services.AddSingleton<IFileStorageService, LocalFileStorageService>();
+
+builder.Services.AddScoped<ToolBarService>();
 
 var app = builder.Build();
 
