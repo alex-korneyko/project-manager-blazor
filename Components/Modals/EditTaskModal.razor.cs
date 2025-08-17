@@ -14,6 +14,7 @@ public partial class EditTaskModal : ComponentBase, IModal<Guid, TaskItem>
     private TaskItem? _task;
     private bool _canModify;
     private string? _error;
+    private bool _editMode;
     private TaskEditModel _model = new();
 
     [Inject] private ApplicationDbContext Db { get; set; } = null!;
@@ -42,7 +43,7 @@ public partial class EditTaskModal : ComponentBase, IModal<Guid, TaskItem>
             await Db.SaveChangesAsync();
             await OnSaved.InvokeAsync(_task);
             await OnModalActionSucceeded.InvokeAsync(_task);
-            CloseModal();
+            _editMode = false;
         }
         catch (Exception ex) { Log.LogError(ex, "Save failed"); _error = "Save failed."; }
     }

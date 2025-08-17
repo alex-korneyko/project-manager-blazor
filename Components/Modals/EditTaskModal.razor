@@ -5,8 +5,11 @@
     <div class="pm-modal-backdrop" @onclick="CloseModal"></div>
     <div class="pm-modal-dialog" role="dialog" aria-modal="true">
         <div class="pm-modal-header">
-            <h5>Edit Task</h5>
-            <button class="pm-modal-btn-close" @onclick="CloseModal" aria-label="Close">x</button>
+            <h5>
+                @_model.Title
+                <span class="badge text-bg-secondary">New</span>
+            </h5>
+            <button class="pm-modal-btn-close" @onclick="CloseModal" aria-label="Close"><i class="bi bi-x"></i></button>
         </div>
         <div class="pm-modal-body">
             @if (_task is null)
@@ -15,14 +18,31 @@
             }
             else
             {
-                <EditForm Model="_model" OnValidSubmit="Save">
-                    <DataAnnotationsValidator />
-                    <InputText @bind-Value="_model.Title" class="form-control mb-2" />
-                    <InputTextArea @bind-Value="_model.DescriptionMarkdown" class="form-control mb-3" rows="4" />
-                    <button type="button" class="btn btn-outline-secondary" @onclick="CloseModal">Cancel</button>
-                    <button class="btn btn-primary" disabled="@(!_canModify)">Save</button>
-                </EditForm>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h6>Description:</h6>
+                    @if (!_editMode)
+                    {
+                        <i class="bi bi-pencil-square open-edit-task-modal"
+                           @onclick="@(() => _editMode = true)"
+                           title="Edit description"></i>
+                    }
 
+                </div>
+                @if (_editMode)
+                {
+                    <EditForm Model="_model" OnValidSubmit="Save">
+                        <DataAnnotationsValidator />
+                        <InputTextArea @bind-Value="_model.DescriptionMarkdown" class="form-control mb-3" rows="4" />
+                        <button type="button" class="btn btn-outline-secondary" @onclick="@(() => _editMode = false)">Cancel</button>
+                        <button class="btn btn-primary" disabled="@(!_canModify)">Save</button>
+                    </EditForm>
+                }
+                else
+                {
+                    <div>
+                        @(_model.DescriptionMarkdown)
+                    </div>
+                }
                 <hr />
                 <TaskAttachments Task="@_task" CanModify="_canModify"/>
             }
