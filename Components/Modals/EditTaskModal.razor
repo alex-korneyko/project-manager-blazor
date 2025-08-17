@@ -3,26 +3,33 @@
 @if (_show)
 {
     <div class="pm-modal-backdrop" @onclick="CloseModal"></div>
-    <div class="pm-modal-dialog">
+    <div class="pm-modal-dialog" role="dialog" aria-modal="true">
         <div class="pm-modal-header">
             <h5>Edit Task</h5>
-            <button class="pm-modal-btn-close" @onclick="CloseModal">X</button>
+            <button class="pm-modal-btn-close" @onclick="CloseModal" aria-label="Close">x</button>
         </div>
         <div class="pm-modal-body">
-            @if (_task is null) { <p>Loading…</p> }
+            @if (_task is null)
+            {
+                <p>Loading…</p>
+            }
             else
             {
                 <EditForm Model="_model" OnValidSubmit="Save">
                     <DataAnnotationsValidator />
                     <InputText @bind-Value="_model.Title" class="form-control mb-2" />
                     <InputTextArea @bind-Value="_model.DescriptionMarkdown" class="form-control mb-3" rows="4" />
+                    <button type="button" class="btn btn-outline-secondary" @onclick="CloseModal">Cancel</button>
                     <button class="btn btn-primary" disabled="@(!_canModify)">Save</button>
                 </EditForm>
 
                 <hr />
-                <TaskAttachments Task="@_task" />
+                <TaskAttachments Task="@_task" CanModify="_canModify"/>
             }
-            @if (_error is not null) { <div class="text-danger mt-2">@_error</div> }
+            @if (!string.IsNullOrEmpty(_error))
+            {
+                <div class="text-danger mt-2">@_error</div>
+            }
         </div>
     </div>
 }

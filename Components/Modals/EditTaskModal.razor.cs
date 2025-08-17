@@ -49,7 +49,10 @@ public partial class EditTaskModal : ComponentBase, IModal<Guid, TaskItem>
 
     public async Task OpenModalAsync(Guid taskId)
     {
-        TaskId = taskId; _show = true; _error = null;
+        TaskId = taskId;
+        _show = true;
+        _error = null;
+
         _task = await Db.Tasks.Include(task => task.Attachments).FirstOrDefaultAsync(task => task.Id == TaskId);
         if (_task is null) { _error = "Task not found."; return; }
 

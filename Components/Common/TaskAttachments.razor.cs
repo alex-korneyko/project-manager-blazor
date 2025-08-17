@@ -12,8 +12,8 @@ namespace ProjectManager.Components.Common;
 public partial class TaskAttachments : ComponentBase
 {
     [Parameter] public TaskItem Task { get; set; } = null!;
+    [Parameter] public bool CanModify { get; set; }
 
-    private bool _canModify;
     private string? _error;
     private readonly List<TaskAttachment> _items = new();
 
@@ -23,24 +23,30 @@ public partial class TaskAttachments : ComponentBase
     [Inject] public AuthenticationStateProvider Auth { get; set; } = null!;
     [Inject] public ILogger<TaskAttachments> Log { get; set; } = null!;
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         _error = null;
         _items.Clear();
         _items.AddRange(Task.Attachments);
+
+        await base.OnParametersSetAsync();
     }
 
-    private string DownloadUrl(TaskAttachment a) => $"/api/FileStorage/GetAttachment/{Task.Id}/{a.Id}";
+    private string DownloadUrl(TaskAttachment a, bool inline) =>
+        $"/api/FileStorage/GetAttachment/{Task.Id}/{a.Id}"  + (inline ? "?inline=true" : string.Empty);
 
     private static string FormatSize(long b) =>
         b >= 1024 * 1024 ? $"{b / 1024 / 1024.0:F1} MB" :
         b >= 1024 ? $"{b / 1024.0:F1} KB" : $"{b} B";
 
+    private static bool IsImage(TaskAttachment a) =>
+        a.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
+
     private async Task OnFilesSelected(InputFileChangeEventArgs e)
     {
         try
         {
-            if (!_canModify)
+            if (!CanModify)
             {
                 _error = "Not allowed.";
                 return;
@@ -86,7 +92,7 @@ public partial class TaskAttachments : ComponentBase
     {
         try
         {
-            if (!_canModify)
+            if (!CanModify)
             {
                 _error = "Not allowed.";
                 return;

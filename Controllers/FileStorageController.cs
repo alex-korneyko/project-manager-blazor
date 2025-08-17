@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Data;
@@ -18,24 +17,17 @@ public class FileStorageController(
 
     [Authorize]
     [HttpGet("GetAttachment/{taskId:guid}/{attachmentId:guid}")]
-    public async Task<IResult> GetAttachment(Guid taskId, Guid attachmentId, CancellationToken ct)
+    public async Task<IActionResult> GetAttachment(Guid taskId, Guid attachmentId, [FromQuery] bool inline = false, CancellationToken ct = default)
     {
         var att = await db.TaskAttachments.Include(a => a.Task)
             .FirstOrDefaultAsync(a => a.Id == attachmentId && a.TaskItemId == taskId, ct);
-        if (att is null) return Results.NotFound();
+        if (att is null) return NotFound();
 
-        // Чтение разрешено участникам проекта
         var res = await auth.AuthorizeAsync(User, att, "IsProjectMember");
-        if (!res.Succeeded) return Results.Forbid();
+        if (!res.Succeeded) return Forbid();
 
         var stream = await storage.OpenReadAsync(att.StoredPath, ct);
-        return Results.File(stream, att.ContentType, att.FileName, enableRangeProcessing: true);
-    }
 
-    [Authorize]
-    [HttpGet("test")]
-    public string GetInfo()
-    {
-        return "Hello World!";
+        return inline ? File(stream, att.ContentType) : File(stream, att.ContentType, att.FileName, enableRangeProcessing: true);
     }
 }

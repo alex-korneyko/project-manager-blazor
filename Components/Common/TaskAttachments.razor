@@ -1,7 +1,7 @@
 ﻿<div class="attachments">
     <div class="d-flex justify-content-between align-items-center mb-2">
         <h6 class="mb-0">Attachments</h6>
-        @if (_canModify)
+        @if (CanModify)
         {
             <InputFile OnChange="@(OnFilesSelected)" multiple />
         }
@@ -19,14 +19,28 @@
             @foreach (var a in _items.OrderByDescending(x => x.UploadedAtUtc))
             {
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <a href="@DownloadUrl(a)" target="_blank">@a.FileName</a>
-                        <div class="small text-muted">@a.ContentType • @FormatSize(a.SizeBytes) • @a.UploadedAtUtc.ToLocalTime()</div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <a href="@DownloadUrl(a, false)" target="_blank">@a.FileName</a>
+                            <div class="small text-muted">@a.ContentType • @FormatSize(a.SizeBytes) • @a.UploadedAtUtc.ToLocalTime()</div>
+                        </div>
+                        @if (IsImage(a))
+                        {
+                            <div class="mt-2">
+                                <img src="@DownloadUrl(a, inline:true)" alt="@a.FileName" style="max-width: 260px; max-height: 180px; border:1px solid #e5e7eb; border-radius: .5rem;" />
+                            </div>
+                        }
+                        <div style="display: flex; flex-direction: column; gap: .25rem; margin-left: 1rem; white-space: nowrap;">
+                            @if (IsImage(a))
+                            {
+                                <a class="btn btn-sm btn-outline-secondary me-2" href="@DownloadUrl(a, inline: true)" target="_blank">Preview</a>
+                            }
+                            @if (CanModify)
+                            {
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteAsync(a)">Delete</button>
+                            }
+                        </div>
                     </div>
-                    @if (_canModify)
-                    {
-                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteAsync(a)">Delete</button>
-                    }
                 </li>
             }
         </ul>
