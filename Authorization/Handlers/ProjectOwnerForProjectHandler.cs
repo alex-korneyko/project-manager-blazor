@@ -6,7 +6,7 @@ using ProjectManager.Domain.Entities;
 
 namespace ProjectManager.Authorization.Handlers;
 
-public sealed class ProjectOwnerForProjectHandler(ApplicationDbContext dbContext)
+public sealed class ProjectOwnerForProjectHandler
     : AuthorizationHandler<ProjectOwnerRequirement, Project>
 {
     protected override Task HandleRequirementAsync(
@@ -22,12 +22,14 @@ public sealed class ProjectOwnerForProjectHandler(ApplicationDbContext dbContext
     }
 }
 
-public sealed class ProjectOwnerForTaskHandler(ApplicationDbContext dbContext)
+public sealed class ProjectOwnerForTaskHandler(IDbContextFactory<ApplicationDbContext> dbContextFactory)
     : AuthorizationHandler<ProjectOwnerRequirement, TaskItem>
 {
     protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, ProjectOwnerRequirement requirement,
         TaskItem resource)
     {
+        var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId is null)
             return;

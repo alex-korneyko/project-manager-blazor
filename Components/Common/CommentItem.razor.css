@@ -1,0 +1,29 @@
+﻿.comment-item {
+    padding: .5rem 0;
+}
+
+.comment-head {
+    font-size: .85rem;
+    color: #6b7280;
+}
+
+.comment-body {
+    white-space: pre-wrap;
+    margin: .35rem 0 .25rem;
+}
+
+.comment-actions {
+    display: flex;
+    gap: .5rem;
+}
+
+.comment-children {
+    border-left: 2px solid #e5e7eb;
+    margin-left: .75rem;
+    padding-left: .75rem;
+}
+
+.edited {
+    color: #9aa0a6;
+    font-size: .8rem;
+}

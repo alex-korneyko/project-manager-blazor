@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.EntityFrameworkCore;
 using ProjectManager.Common.Security;
 using ProjectManager.Components.Common;
 using ProjectManager.Components.Modals;
@@ -15,7 +16,7 @@ public partial class Projects : ComponentBase
 {
     [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
     [Inject] private IProjectAccessService ProjectAccessService { get; set; } = null!;
-    [Inject] private ApplicationDbContext DbContext { get; set; } = null!;
+    [Inject] public IDbContextFactory<ApplicationDbContext> DbContextFactory { get; set; } = null!;
     [Inject] private ILogger<Projects> Logger { get; set; } = null!;
     [Inject] private ToolBarService ToolBarService { get; set; } = null!;
 

@@ -43,7 +43,7 @@ public partial class ProjectDetails : ComponentBase
     [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
     [Inject] private IAuthorizationService AuthorizationService { get; set; } = null!;
     [Inject] private UserManager<ApplicationUser> UserManager { get; set; } = null!;
-    [Inject] private ApplicationDbContext DbContext { get; set; } = null!;
+    [Inject] public IDbContextFactory<ApplicationDbContext> DbContextFactory { get; set; } = null!;
     [Inject] private ILogger<ProjectDetails> Logger { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Inject] private ToolBarService ToolBarService { get; set; } = null!;
@@ -66,7 +66,9 @@ public partial class ProjectDetails : ComponentBase
     {
         _loading = true;
 
-        var project = await DbContext.Projects
+        var dbContext = await DbContextFactory.CreateDbContextAsync();
+
+        var project = await dbContext.Projects
             .Include(prj => prj.Members)
             .ThenInclude(member => member.User)
             .Include(prj => prj.Owner)
@@ -111,6 +113,8 @@ public partial class ProjectDetails : ComponentBase
         {
             if (_project is null) return;
 
+            var dbContext = await DbContextFactory.CreateDbContextAsync();
+
             // Ещё раз проверим право владельца
             var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
             var ownerCheck = await AuthorizationService.AuthorizeAsync(user, _project, "IsProjectOwner");
@@ -124,17 +128,17 @@ public partial class ProjectDetails : ComponentBase
             if (target is null) { _inviteError = "User with entered Email not found."; return; }
 
             // Проверим дубликаты
-            var exists = await DbContext.ProjectMembers.AnyAsync(m => m.ProjectId == _project.Id && m.UserId == target.Id);
+            var exists = await dbContext.ProjectMembers.AnyAsync(m => m.ProjectId == _project.Id && m.UserId == target.Id);
             if (exists) { _inviteError = "User already added"; return; }
 
-            DbContext.ProjectMembers.Add(new ProjectMember
+            dbContext.ProjectMembers.Add(new ProjectMember
             {
                 Id = Guid.NewGuid(),
                 ProjectId = _project.Id,
                 UserId = target.Id,
                 Role = "Member"
             });
-            await DbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
 
             // Refresh list
             await OnParametersSetAsync();
@@ -156,15 +160,17 @@ public partial class ProjectDetails : ComponentBase
         {
             if (_project is null) return;
 
+            var dbContext = await DbContextFactory.CreateDbContextAsync();
+
             var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
             var ownerCheck = await AuthorizationService.AuthorizeAsync(user, _project, "IsProjectOwner");
             if (!ownerCheck.Succeeded) { _inviteError = "No rights to delete."; return; }
 
-            var pm = await DbContext.ProjectMembers.FirstOrDefaultAsync(x => x.Id == projectMemberId && x.ProjectId == _project.Id);
+            var pm = await dbContext.ProjectMembers.FirstOrDefaultAsync(x => x.Id == projectMemberId && x.ProjectId == _project.Id);
             if (pm is null) { _inviteError = "Member not found."; return; }
 
-            DbContext.ProjectMembers.Remove(pm);
-            await DbContext.SaveChangesAsync();
+            dbContext.ProjectMembers.Remove(pm);
+            await dbContext.SaveChangesAsync();
 
             await OnParametersSetAsync();
             _inviteOk = "Member removed.";
@@ -178,13 +184,15 @@ public partial class ProjectDetails : ComponentBase
 
     private async Task LoadTasksAsync()
     {
-        _tasks = await DbContext.Tasks
+        var dbContext = await DbContextFactory.CreateDbContextAsync();
+
+        _tasks = await dbContext.Tasks
             .Where(t => t.ProjectId == ProjectId)
             .OrderByDescending(t => t.CreatedAtUtc)
             .ToListAsync();
 
         var authorIds = _tasks.Select(t => t.AuthorId).Distinct().ToList();
-        var users = await DbContext.Users
+        var users = await dbContext.Users
             .Where(u => authorIds.Contains(u.Id))
             .Select(u => new { u.Id, u.Email })
             .ToListAsync();
@@ -199,6 +207,7 @@ public partial class ProjectDetails : ComponentBase
         {
             if (_project is null) return;
 
+            var dbContext = await DbContextFactory.CreateDbContextAsync();
             var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
             var memberResult = await AuthorizationService.AuthorizeAsync(user, _project, "IsProjectMember");
             if (!memberResult.Succeeded) { _taskError = "No rights to task create."; return; }
@@ -220,8 +229,8 @@ public partial class ProjectDetails : ComponentBase
                 AuthorId = _currentUserId,
                 CreatedAtUtc = DateTime.UtcNow
             };
-            DbContext.Tasks.Add(task);
-            await DbContext.SaveChangesAsync();
+            dbContext.Tasks.Add(task);
+            await dbContext.SaveChangesAsync();
 
             _newTask = new(); // reset
             await LoadTasksAsync();
@@ -260,13 +269,14 @@ public partial class ProjectDetails : ComponentBase
     {
         try
         {
+            var dbContext = await DbContextFactory.CreateDbContextAsync();
             var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
             var canModify = await AuthorizationService.AuthorizeAsync(user, t, "CanTaskModify");
             if (!canModify.Succeeded) { _taskError = "No rights to task update."; return; }
 
             t.Title = _editTask.Title.Trim();
             t.DescriptionMarkdown = string.IsNullOrWhiteSpace(_editTask.DescriptionMarkdown) ? null : _editTask.DescriptionMarkdown!.Trim();
-            await DbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
 
             _editId = null;
             _taskError = null;
@@ -282,12 +292,13 @@ public partial class ProjectDetails : ComponentBase
     {
         try
         {
+            var dbContext = await DbContextFactory.CreateDbContextAsync();
             var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
             var canModify = await AuthorizationService.AuthorizeAsync(user, t, "CanTaskModify");
             if (!canModify.Succeeded) { _taskError = "No rights to task delete."; return; }
 
-            DbContext.Tasks.Remove(t);
-            await DbContext.SaveChangesAsync();
+            dbContext.Tasks.Remove(t);
+            await dbContext.SaveChangesAsync();
 
             _tasks.RemoveAll(x => x.Id == t.Id);
         }
@@ -302,12 +313,13 @@ public partial class ProjectDetails : ComponentBase
     {
         try
         {
+            var dbContext = await DbContextFactory.CreateDbContextAsync();
             var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
             var isMember = await AuthorizationService.AuthorizeAsync(user, t, "IsProjectMember");
             if (!isMember.Succeeded) { _taskError = "No rights to change status."; return; }
 
             t.Status = newStatus;
-            await DbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
         }
         catch (Exception ex)
         {

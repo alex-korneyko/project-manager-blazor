@@ -9,7 +9,7 @@ namespace ProjectManager.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 public class FileStorageController(
-    ApplicationDbContext db,
+    IDbContextFactory<ApplicationDbContext> dbContextFactory,
     IAuthorizationService auth,
     IFileStorageService storage)
     : Controller
@@ -19,6 +19,7 @@ public class FileStorageController(
     [HttpGet("GetAttachment/{taskId:guid}/{attachmentId:guid}")]
     public async Task<IActionResult> GetAttachment(Guid taskId, Guid attachmentId, [FromQuery] bool inline = false, CancellationToken ct = default)
     {
+        var db = await dbContextFactory.CreateDbContextAsync(ct);
         var att = await db.TaskAttachments.Include(a => a.Task)
             .FirstOrDefaultAsync(a => a.Id == attachmentId && a.TaskItemId == taskId, ct);
         if (att is null) return NotFound();

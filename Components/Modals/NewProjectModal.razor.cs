@@ -16,11 +16,9 @@ public partial class NewProjectModal : ComponentBase, IModal<Project>
     private bool _submitting;
     private string? _modalError;
     private string? _error;
-    // private string _newProjectName = string.Empty;
-    // private string? _newProjectDesc;
 
     [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
-    [Inject] private ApplicationDbContext DbContext { get; set; } = null!;
+    [Inject] public IDbContextFactory<ApplicationDbContext> DbContextFactory { get; set; } = null!;
     [Inject] private ILogger<NewProjectModal> Logger { get; set; } = null!;
 
     [Parameter] public EventCallback<Project> OnModalActionSucceeded { get; set; }
@@ -45,6 +43,7 @@ public partial class NewProjectModal : ComponentBase, IModal<Project>
         {
             var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
             var userId = user.GetUserId();
+            var dbContext = await DbContextFactory.CreateDbContextAsync();
 
             var project = new Project()
             {
@@ -54,8 +53,8 @@ public partial class NewProjectModal : ComponentBase, IModal<Project>
                 OwnerId = userId!
             };
 
-            DbContext.Projects.Add(project);
-            await DbContext.SaveChangesAsync();
+            dbContext.Projects.Add(project);
+            await dbContext.SaveChangesAsync();
             _modalModel.Title = "";
             _modalModel.DescriptionMarkdown = null;
 

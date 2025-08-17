@@ -1,0 +1,26 @@
+﻿<div class="task-comments">
+    <h6>Discussion</h6>
+    <CommentEditor SubmitText="Comment" OnSubmit="PostTopLevel" />
+
+    <div class="mt-2">
+        @if (_nodes is null)
+        {
+            <div class="text-muted">Loading…</div>
+        }
+        else if (_nodes.Count == 0)
+        {
+            <div class="text-muted">No comments yet.</div>
+        }
+        else
+        {
+            @foreach (var n in _nodes)
+            {
+                <CommentItem Node="n" OnChanged="Reload" />
+            }
+        }
+    </div>
+</div>
+
+@code {
+
+}

@@ -8,7 +8,7 @@ namespace ProjectManager.Authorization.Handlers;
 
 //Can reed/download files - any project member
 
-public class ProjectMemberForAttachmentHandler(ApplicationDbContext dbContext)
+public class ProjectMemberForAttachmentHandler(IDbContextFactory<ApplicationDbContext> dbContextFactory)
     : AuthorizationHandler<ProjectMemberRequirement, TaskAttachment>
 {
     protected override async Task HandleRequirementAsync(
@@ -16,6 +16,8 @@ public class ProjectMemberForAttachmentHandler(ApplicationDbContext dbContext)
         ProjectMemberRequirement requirement,
         TaskAttachment attachment)
     {
+        var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId is null) return;
 

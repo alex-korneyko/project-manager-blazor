@@ -1,0 +1,46 @@
+﻿<div class="comment-item">
+    <div class="comment-head">
+        <span class="author">@Node.AuthorEmail</span>
+        <span class="time">• @Node.Comment.CreatedAtUtc.ToLocalTime()</span>
+        @if (Node.Comment.EditedAtUtc is not null)
+        {
+            <span class="edited"> (edited) </span>
+        }
+    </div>
+
+    <div class="comment-body">
+        @Node.Comment.BodyMarkdown
+    </div>
+
+    <div class="comment-actions">
+        <button class="btn btn-link btn-sm" @onclick="ToggleReply">Reply</button>
+        @if (CanModify)
+        {
+            <button class="btn btn-link btn-sm" @onclick="ToggleEdit">Edit</button>
+            <button class="btn btn-link btn-sm text-danger" @onclick="DeleteThread">Delete</button>
+        }
+    </div>
+
+    @if (_editing)
+    {
+        <CommentEditor SubmitText="Save" OnSubmit="@(SaveEdit)" OnCancel="@(() => _editing = false)" />
+    }
+    @if (_replying)
+    {
+        <CommentEditor SubmitText="Reply" OnSubmit="@(SendReply)" OnCancel="@(() => _replying = false)" />
+    }
+
+    @if (Node.Children.Count > 0)
+    {
+        <div class="comment-children">
+            @foreach (var child in Node.Children)
+            {
+                <CommentItem Node="child" OnChanged="OnChanged" />
+            }
+        </div>
+    }
+</div>
+
+@code {
+
+}

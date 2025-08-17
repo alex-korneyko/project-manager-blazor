@@ -1,0 +1,17 @@
+﻿<EditForm Model="_model" OnValidSubmit="OnSubmitAsync">
+    <DataAnnotationsValidator />
+    <InputTextArea class="form-control" rows="3" @bind-Value="_model.Body" />
+    <ValidationMessage For="@(() => _model.Body)" />
+    <div class="mt-2 d-flex gap-2">
+        <button class="btn btn-primary btn-sm" type="submit" disabled="@_submitting">@SubmitText</button>
+        @if (OnCancel.HasDelegate)
+        {
+            <button class="btn btn-outline-secondary btn-sm" type="button" @onclick="() => OnCancel.InvokeAsync()">Cancel</button>
+        }
+    </div>
+    @if (!string.IsNullOrWhiteSpace(_error)) { <div class="text-danger small mt-1">@_error</div> }
+</EditForm>
+
+@code {
+
+}

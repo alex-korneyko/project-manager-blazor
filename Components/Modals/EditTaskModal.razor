@@ -45,6 +45,9 @@
                 }
                 <hr />
                 <TaskAttachments Task="@_task" CanModify="_canModify"/>
+
+                <hr/>
+                <CommentsThread TaskId="_task.Id"/>
             }
             @if (!string.IsNullOrEmpty(_error))
             {

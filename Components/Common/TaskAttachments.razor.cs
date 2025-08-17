@@ -17,7 +17,7 @@ public partial class TaskAttachments : ComponentBase
     private string? _error;
     private readonly List<TaskAttachment> _items = new();
 
-    [Inject] public ApplicationDbContext Db { get; set; } = null!;
+    [Inject] public IDbContextFactory<ApplicationDbContext> DbContextFactory { get; set; } = null!;
     [Inject] public IFileStorageService Storage { get; set; } = null!;
     [Inject] public IAuthorizationService Authz { get; set; } = null!;
     [Inject] public AuthenticationStateProvider Auth { get; set; } = null!;
@@ -54,6 +54,7 @@ public partial class TaskAttachments : ComponentBase
 
             var user = (await Auth.GetAuthenticationStateAsync()).User;
             var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
+            var dbContext = await DbContextFactory.CreateDbContextAsync();
 
             foreach (var file in e.GetMultipleFiles())
             {
@@ -75,11 +76,11 @@ public partial class TaskAttachments : ComponentBase
                     UploaderId = userId,
                     UploadedAtUtc = DateTime.UtcNow
                 };
-                Db.TaskAttachments.Add(att);
+                dbContext.TaskAttachments.Add(att);
                 _items.Insert(0, att);
             }
 
-            await Db.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
         }
         catch (Exception ex)
         {
@@ -92,6 +93,8 @@ public partial class TaskAttachments : ComponentBase
     {
         try
         {
+            var dbContext = await DbContextFactory.CreateDbContextAsync();
+
             if (!CanModify)
             {
                 _error = "Not allowed.";
@@ -99,8 +102,8 @@ public partial class TaskAttachments : ComponentBase
             }
 
             await Storage.DeleteAsync(a.StoredPath);
-            Db.TaskAttachments.Remove(a);
-            await Db.SaveChangesAsync();
+            dbContext.TaskAttachments.Remove(a);
+            await dbContext.SaveChangesAsync();
             _items.RemoveAll(x => x.Id == a.Id);
         }
         catch (Exception ex)

@@ -6,13 +6,15 @@ using ProjectManager.Domain.Entities;
 
 namespace ProjectManager.Authorization.Handlers;
 
-public class TaskModifyHandler(ApplicationDbContext dbContext) : AuthorizationHandler<TaskModifyRequirement, TaskItem>
+public class TaskModifyHandler(IDbContextFactory<ApplicationDbContext> dbContextFactory) : AuthorizationHandler<TaskModifyRequirement, TaskItem>
 {
     protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         TaskModifyRequirement requirement,
         TaskItem resource)
     {
+        var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId is null)
             return;

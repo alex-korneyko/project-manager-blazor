@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.EntityFrameworkCore;
 using ProjectManager.Components.UiModels;
 using ProjectManager.Data;
 using ProjectManager.Domain.Entities;
@@ -16,7 +17,7 @@ public partial class NewTaskModal : ComponentBase, IModal<TaskStatus, TaskItem>
     private string? _modalError;
     private bool _submitting;
 
-    [Inject] private ApplicationDbContext Db { get; set; } = null!;
+    [Inject] public IDbContextFactory<ApplicationDbContext> DbContextFactory { get; set; } = null!;
     [Inject] private IAuthorizationService Authz { get; set; } = null!;
     [Inject] private AuthenticationStateProvider AuthState { get; set; } = null!;
     [Inject] private ILogger<NewTaskModal> Log { get; set; } = null!;
@@ -77,8 +78,9 @@ public partial class NewTaskModal : ComponentBase, IModal<TaskStatus, TaskItem>
                 CreatedAtUtc = DateTime.UtcNow
             };
 
-            Db.Tasks.Add(task);
-            await Db.SaveChangesAsync();
+            var dbContext = await DbContextFactory.CreateDbContextAsync();
+            dbContext.Tasks.Add(task);
+            await dbContext.SaveChangesAsync();
 
             await OnModalActionSucceeded.InvokeAsync(task);
         }

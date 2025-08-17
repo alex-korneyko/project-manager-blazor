@@ -1,14 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
-using ProjectManager.Authorization;
 using ProjectManager.Authorization.Handlers;
 using ProjectManager.Components.Account;
 using ProjectManager.Data;
 using ProjectManager.Data.Models;
 using ProjectManager.Services.Security;
 
-namespace ProjectManager.Common.Extensions;
+namespace ProjectManager.Authorization;
 
 public static class IdentityServiceCollectionExtension
 {
@@ -25,6 +24,7 @@ public static class IdentityServiceCollectionExtension
             options.AddPolicy("IsProjectOwner", policy => policy.Requirements.Add(new ProjectOwnerRequirement()));
             options.AddPolicy("IsCommentAuthor", policy => policy.Requirements.Add(new CommentAuthorRequirement()));
             options.AddPolicy("CanTaskModify", policy => policy.Requirements.Add(new TaskModifyRequirement()));
+            options.AddPolicy("CommentAuthor", policy => policy.Requirements.Add(new CommentAuthorRequirement()));
         });
 
         services.AddScoped<IProjectAccessService, ProjectAccessService>();

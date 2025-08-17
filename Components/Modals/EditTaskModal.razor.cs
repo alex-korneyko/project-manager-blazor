@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -17,7 +18,7 @@ public partial class EditTaskModal : ComponentBase, IModal<Guid, TaskItem>
     private bool _editMode;
     private TaskEditModel _model = new();
 
-    [Inject] private ApplicationDbContext Db { get; set; } = null!;
+    [Inject] IDbContextFactory<ApplicationDbContext> DbContextFactory { get; set; } = null!;
     [Inject] private IAuthorizationService Authz { get; set; } = null!;
     [Inject] private AuthenticationStateProvider Auth { get; set; } = null!;
     [Inject] private ILogger<EditTaskModal> Log { get; set; } = null!;
@@ -33,14 +34,34 @@ public partial class EditTaskModal : ComponentBase, IModal<Guid, TaskItem>
         public string? DescriptionMarkdown { get; set; }
     }
 
+    protected override async Task OnParametersSetAsync()
+    {
+        _error = null;
+
+        if (TaskId == Guid.Empty)
+        {
+            return;
+        }
+
+        var dbContext = await DbContextFactory.CreateDbContextAsync();
+        _task = await dbContext.Tasks.Include(task => task.Attachments).FirstOrDefaultAsync(task => task.Id == TaskId);
+        if (_task is null) { _error = "Task not found."; return; }
+
+        var user = (await Auth.GetAuthenticationStateAsync()).User;
+        _canModify = (await Authz.AuthorizeAsync(user, _task, "CanTaskModify")).Succeeded;
+
+        _model = new() { Title = _task.Title, DescriptionMarkdown = _task.DescriptionMarkdown };
+    }
+
     private async Task Save()
     {
         try
         {
+            var dbContext = await DbContextFactory.CreateDbContextAsync();
             if (!_canModify || _task is null) { _error = "Not allowed."; return; }
             _task.Title = _model.Title.Trim();
             _task.DescriptionMarkdown = string.IsNullOrWhiteSpace(_model.DescriptionMarkdown) ? null : _model.DescriptionMarkdown!.Trim();
-            await Db.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
             await OnSaved.InvokeAsync(_task);
             await OnModalActionSucceeded.InvokeAsync(_task);
             _editMode = false;
@@ -54,7 +75,8 @@ public partial class EditTaskModal : ComponentBase, IModal<Guid, TaskItem>
         _show = true;
         _error = null;
 
-        _task = await Db.Tasks.Include(task => task.Attachments).FirstOrDefaultAsync(task => task.Id == TaskId);
+        var dbContext = await DbContextFactory.CreateDbContextAsync();
+        _task = await dbContext.Tasks.Include(task => task.Attachments).FirstOrDefaultAsync(task => task.Id == TaskId);
         if (_task is null) { _error = "Task not found."; return; }
 
         var user = (await Auth.GetAuthenticationStateAsync()).User;

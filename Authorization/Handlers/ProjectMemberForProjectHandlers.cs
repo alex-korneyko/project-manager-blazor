@@ -6,7 +6,7 @@ using ProjectManager.Domain.Entities;
 
 namespace ProjectManager.Authorization.Handlers;
 
-public sealed class ProjectMemberForProjectHandler(ApplicationDbContext dbContext)
+public sealed class ProjectMemberForProjectHandler(IDbContextFactory<ApplicationDbContext> dbContextFactory)
     : AuthorizationHandler<ProjectMemberRequirement, Project>
 {
     protected override async Task HandleRequirementAsync(
@@ -14,6 +14,8 @@ public sealed class ProjectMemberForProjectHandler(ApplicationDbContext dbContex
         ProjectMemberRequirement requirement,
         Project resource)
     {
+        var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (userId is null)
@@ -27,7 +29,7 @@ public sealed class ProjectMemberForProjectHandler(ApplicationDbContext dbContex
     }
 }
 
-public sealed class ProjectMemberForTaskHandler(ApplicationDbContext dbContext)
+public sealed class ProjectMemberForTaskHandler(IDbContextFactory<ApplicationDbContext> dbContextFactory)
     : AuthorizationHandler<ProjectMemberRequirement, TaskItem>
 {
     protected override async Task HandleRequirementAsync(
@@ -39,6 +41,8 @@ public sealed class ProjectMemberForTaskHandler(ApplicationDbContext dbContext)
 
         if (userId is null)
             return;
+
+        var dbContext = await dbContextFactory.CreateDbContextAsync();
 
         var isMember = await dbContext.Projects
             .Where(project => project.Id == resource.ProjectId)

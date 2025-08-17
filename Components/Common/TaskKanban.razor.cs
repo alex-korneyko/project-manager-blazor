@@ -23,6 +23,7 @@ public partial class TaskKanban : ComponentBase
     };
 
     private Project? _currentProject;
+    private Guid _currentTaskId;
     private readonly Dictionary<TaskStatus, List<TaskItem>> _columns = new();
     private readonly HashSet<Guid> _busyTasks = new();
     private Guid? _draggingId;
@@ -31,7 +32,7 @@ public partial class TaskKanban : ComponentBase
     private NewTaskModal _newTaskModal = null!;
     private EditTaskModal _editTaskModal = null!;
 
-    [Inject] private ApplicationDbContext Db { get; set; } = null!;
+    [Inject] public IDbContextFactory<ApplicationDbContext> DbContextFactory { get; set; }
     [Inject] private IAuthorizationService Authz { get; set; } = null!;
     [Inject] private AuthenticationStateProvider AuthState { get; set; } = null!;
     [Inject] private ILogger<TaskKanban> Log { get; set; } = null!;
@@ -46,12 +47,14 @@ public partial class TaskKanban : ComponentBase
     public async Task ReloadAsync()
     {
         _error = null;
+        var dbContext = await DbContextFactory.CreateDbContextAsync();
 
         foreach (var s in _columnsOrder)
             _columns[s] = new List<TaskItem>();
 
-        _currentProject = await Db.Projects
+        _currentProject = await dbContext.Projects
             .Include(p => p.Tasks)
+            .ThenInclude(task => task.Author)
             .FirstOrDefaultAsync(p => p.Id == ProjectId);
 
         if (_currentProject is null)
@@ -78,6 +81,8 @@ public partial class TaskKanban : ComponentBase
 
         try
         {
+            var dbContext = await DbContextFactory.CreateDbContextAsync();
+            if (_busyTasks.Contains(_draggingId.Value)) return;
             var t = FindTask(_draggingId.Value);
             if (t is null) return;
 
@@ -98,7 +103,7 @@ public partial class TaskKanban : ComponentBase
 
             // Персист в БД (t уже трекается DbContext-ом)
             t.Status = target;
-            await Db.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
         }
         catch (Exception ex)
         {

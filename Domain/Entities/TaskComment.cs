@@ -19,4 +19,5 @@ public class TaskComment
     public List<TaskComment> Replies { get; set; } = new();
 
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+    public DateTime? EditedAtUtc { get; set; }
 }

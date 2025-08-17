@@ -8,7 +8,7 @@ namespace ProjectManager.Authorization.Handlers;
 
 //Can upload/delete files - project owner or task author
 
-public class TaskModifyForAttachmentHandler(ApplicationDbContext dbContext)
+public class TaskModifyForAttachmentHandler(IDbContextFactory<ApplicationDbContext> dbContextFactory)
     : AuthorizationHandler<TaskModifyRequirement, TaskAttachment>
 {
     protected override async Task HandleRequirementAsync(
@@ -16,6 +16,8 @@ public class TaskModifyForAttachmentHandler(ApplicationDbContext dbContext)
         TaskModifyRequirement requirement,
         TaskAttachment attachment)
     {
+        var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId is null) return;
 

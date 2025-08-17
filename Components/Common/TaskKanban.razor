@@ -56,7 +56,7 @@
     OnModalActionSucceeded="OnTaskCreated"
 />
 
-<EditTaskModal @ref="_editTaskModal" OnModalActionSucceeded="OnTaskSaved"/>
+<EditTaskModal @ref="_editTaskModal" TaskId="_currentTaskId" OnModalActionSucceeded="OnTaskSaved"/>
 
 @code {
     
