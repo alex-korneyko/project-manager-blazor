@@ -11,6 +11,7 @@ public partial class CommentItem : ComponentBase
     private bool _editing;
     private bool _replying;
     private bool CanModify;
+    private bool _confirmDelete;
 
     [Inject] public CommentsService CommentsService { get; set; } = null!;
     [Inject] public AuthenticationStateProvider Auth { get; set; } = null!;
@@ -29,6 +30,7 @@ public partial class CommentItem : ComponentBase
 
     private void ToggleEdit() => _editing = !_editing;
     private void ToggleReply() => _replying = !_replying;
+    private void ToggleDelete() => _confirmDelete = !_confirmDelete;
 
     private async Task SaveEdit(string newBody)
     {
@@ -45,6 +47,10 @@ public partial class CommentItem : ComponentBase
     private async Task DeleteThread()
     {
         var ok = await CommentsService.DeleteThreadAsync(Node.Comment.Id, (await Auth.GetAuthenticationStateAsync()).User);
-        if (ok) await OnChanged.InvokeAsync();
+        if (ok)
+        {
+            _confirmDelete = false;
+            await OnChanged.InvokeAsync();
+        }
     }
 }

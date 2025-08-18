@@ -12,6 +12,12 @@ public partial class CommentEditor : ComponentBase
     [Parameter] public string SubmitText { get; set; } = "Send";
     [Parameter] public EventCallback<string> OnSubmit { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public string EditText { get; set; } = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        _model.Body = EditText;
+    }
 
     private async Task OnSubmitAsync()
     {

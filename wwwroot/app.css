@@ -67,9 +67,8 @@ h1:focus {
     background: #fff;
     border-radius: .5rem;
     width: min(600px, 92vw);
-    height: min(800px, 92vh);
+    max-height: min(800px, 92vh);
     overflow: hidden;
-    max-height: 150vh;
     box-shadow: 0 10px 30px rgba(0, 0, 0, .2);
     z-index: 1001;
 }
@@ -84,14 +83,16 @@ h1:focus {
 }
 
 .pm-modal-body {
+    display: flex;
     flex: 1;
-    overflow: auto;
+    overflow: hidden;
 }
 
 .pm-modal-body-two-columns{
     display:flex;
     flex-direction: row;
-    height: 100%;
+    overflow: hidden;
+    flex: 1;
 }
 
 .pm-modal-btn-close {

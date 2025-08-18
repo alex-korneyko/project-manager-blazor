@@ -1,41 +1,48 @@
-﻿<div class="comment-item">
-    <div class="comment-head">
-        <span class="author">@Node.AuthorEmail</span>
-        <span class="time">• @Node.Comment.CreatedAtUtc.ToLocalTime()</span>
-        @if (Node.Comment.EditedAtUtc is not null)
+﻿<div class="comment-item" style="@(Node.Children.Count > 0 ? "" : "margin:0.2rem")">
+    <div class="comment-content">
+        <div class="comment-head">
+            <span class="author">@Node.AuthorEmail</span>
+            <span class="time">• @Node.Comment.CreatedAtUtc.ToLocalTime()</span>
+            @if (Node.Comment.EditedAtUtc is not null)
+            {
+                <span class="edited"> (edited) </span>
+            }
+        </div>
+
+        <div class="comment-body @(_editing ? "comment-body-fade" : "")">
+            @Node.Comment.BodyMarkdown
+        </div>
+
+        <div class="comment-actions">
+            <i class="bi bi-reply" @onclick="ToggleReply" title="Reply"></i>
+            @if (CanModify)
+            {
+                <i class="bi bi-pencil" @onclick="ToggleEdit" title="Edit"></i>
+                <i class="bi bi-trash3" @onclick="ToggleDelete" title="Delete"></i>
+            }
+        </div>
+
+        @if (_editing)
         {
-            <span class="edited"> (edited) </span>
+            <CommentEditor SubmitText="Save" EditText="@Node.Comment.BodyMarkdown" OnSubmit="@(SaveEdit)" OnCancel="@(() => _editing = false)"/>
+        }
+        @if (_replying)
+        {
+            <CommentEditor SubmitText="Reply" OnSubmit="@(SendReply)" OnCancel="@(() => _replying = false)"/>
+        }
+        @if (_confirmDelete)
+        {
+            <div style="text-align: end">
+                <button class="btn btn-sm btn-outline-danger" @onclick="DeleteThread">Delete</button>
+            </div>
         }
     </div>
-
-    <div class="comment-body">
-        @Node.Comment.BodyMarkdown
-    </div>
-
-    <div class="comment-actions">
-        <button class="btn btn-link btn-sm" @onclick="ToggleReply">Reply</button>
-        @if (CanModify)
-        {
-            <button class="btn btn-link btn-sm" @onclick="ToggleEdit">Edit</button>
-            <button class="btn btn-link btn-sm text-danger" @onclick="DeleteThread">Delete</button>
-        }
-    </div>
-
-    @if (_editing)
-    {
-        <CommentEditor SubmitText="Save" OnSubmit="@(SaveEdit)" OnCancel="@(() => _editing = false)" />
-    }
-    @if (_replying)
-    {
-        <CommentEditor SubmitText="Reply" OnSubmit="@(SendReply)" OnCancel="@(() => _replying = false)" />
-    }
-
     @if (Node.Children.Count > 0)
     {
         <div class="comment-children">
             @foreach (var child in Node.Children)
             {
-                <CommentItem Node="child" OnChanged="OnChanged" />
+                <CommentItem Node="child" OnChanged="OnChanged"/>
             }
         </div>
     }

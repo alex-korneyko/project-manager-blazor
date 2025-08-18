@@ -1,1 +1,9 @@
-﻿
+﻿.attachments {
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.attachments-list {
+    overflow-y: auto;
+}
