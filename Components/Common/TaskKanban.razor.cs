@@ -32,7 +32,7 @@ public partial class TaskKanban : ComponentBase
     private NewTaskModal _newTaskModal = null!;
     private EditTaskModal _editTaskModal = null!;
 
-    [Inject] public IDbContextFactory<ApplicationDbContext> DbContextFactory { get; set; }
+    [Inject] public IDbContextFactory<ApplicationDbContext> DbContextFactory { get; set; } = null!;
     [Inject] private IAuthorizationService Authz { get; set; } = null!;
     [Inject] private AuthenticationStateProvider AuthState { get; set; } = null!;
     [Inject] private ILogger<TaskKanban> Log { get; set; } = null!;
@@ -96,13 +96,12 @@ public partial class TaskKanban : ComponentBase
                 return;
             }
 
-            // Оптимистичное обновление UI
             MoveCardInMemory(t, target);
             _busyTasks.Add(t.Id);
             StateHasChanged();
 
-            // Персист в БД (t уже трекается DbContext-ом)
             t.Status = target;
+            dbContext.Tasks.Update(t);
             await dbContext.SaveChangesAsync();
         }
         catch (Exception ex)
