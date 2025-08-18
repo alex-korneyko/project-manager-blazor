@@ -58,7 +58,7 @@ public class CommentsService(
                 roots.Add(map[comment.Id]);
         }
 
-        return roots;
+        return roots.OrderByDescending(node => node.Comment.CreatedAtUtc).ToList();
     }
 
     public async Task<TaskComment?> AddAsync(Guid taskId, Guid? parentId, string bodyMarkdown, ClaimsPrincipal user,

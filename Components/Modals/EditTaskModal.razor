@@ -3,56 +3,65 @@
 @if (_show)
 {
     <div class="pm-modal-backdrop" @onclick="CloseModal"></div>
-    <div class="pm-modal-dialog" role="dialog" aria-modal="true">
+    <div class="pm-modal-dialog" style="width: min(1000px, 150vw)" role="dialog" aria-modal="true">
         <div class="pm-modal-header">
             <h5>
                 @_model.Title
-                <span class="badge text-bg-secondary">New</span>
+                <span class="badge text-bg-secondary">@_task?.Status.ToString()</span>
             </h5>
             <button class="pm-modal-btn-close" @onclick="CloseModal" aria-label="Close"><i class="bi bi-x"></i></button>
         </div>
         <div class="pm-modal-body">
-            @if (_task is null)
-            {
-                <p>Loading…</p>
-            }
-            else
-            {
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h6>Description:</h6>
-                    @if (!_editMode)
+            <div class="pm-modal-body-two-columns">
+                <div style="width: 60%; padding: 1rem;">
+                    @if (_task is null)
                     {
-                        <i class="bi bi-pencil-square open-edit-task-modal"
-                           @onclick="@(() => _editMode = true)"
-                           title="Edit description"></i>
+                        <p>Loading…</p>
+                    }
+                    else
+                    {
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h6>Description:</h6>
+                            @if (!_editMode && _canModify)
+                            {
+                                <i class="bi bi-pencil-square open-edit-task-modal"
+                                   @onclick="@(() => _editMode = true)"
+                                   title="Edit description"></i>
+                            }
+
+                        </div>
+                        @if (_editMode)
+                        {
+                            <EditForm Model="_model" OnValidSubmit="Save">
+                                <DataAnnotationsValidator/>
+                                <InputTextArea @bind-Value="_model.DescriptionMarkdown" class="form-control mb-3" rows="4"/>
+                                <button type="button" class="btn btn-outline-secondary" @onclick="@(() => _editMode = false)">Cancel</button>
+                                <button class="btn btn-primary" disabled="@(!_canModify)">Save</button>
+                            </EditForm>
+                        }
+                        else
+                        {
+                            <div>
+                                @(_model.DescriptionMarkdown)
+                            </div>
+                        }
+
+                        <hr/>
+                        <TaskAttachments Task="@_task" CanModify="_canModify"/>
                     }
 
+                    @if (!string.IsNullOrEmpty(_error))
+                    {
+                        <div class="text-danger mt-2">@_error</div>
+                    }
                 </div>
-                @if (_editMode)
-                {
-                    <EditForm Model="_model" OnValidSubmit="Save">
-                        <DataAnnotationsValidator />
-                        <InputTextArea @bind-Value="_model.DescriptionMarkdown" class="form-control mb-3" rows="4" />
-                        <button type="button" class="btn btn-outline-secondary" @onclick="@(() => _editMode = false)">Cancel</button>
-                        <button class="btn btn-primary" disabled="@(!_canModify)">Save</button>
-                    </EditForm>
-                }
-                else
-                {
-                    <div>
-                        @(_model.DescriptionMarkdown)
-                    </div>
-                }
-                <hr />
-                <TaskAttachments Task="@_task" CanModify="_canModify"/>
-
-                <hr/>
-                <CommentsThread TaskId="_task.Id"/>
-            }
-            @if (!string.IsNullOrEmpty(_error))
-            {
-                <div class="text-danger mt-2">@_error</div>
-            }
+                <div style="width: 40%; padding: 1rem; background-color: #f8f9fa; border-left: 1px solid #e5e7eb; border-radius: 0 0.5rem 0.5rem 0; overflow-y: hidden">
+                    @if (_task is not null)
+                    {
+                        <CommentsThread TaskId="_task.Id"/>
+                    }
+                </div>
+            </div>
         </div>
     </div>
 }
