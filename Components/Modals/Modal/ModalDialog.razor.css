@@ -1,0 +1,57 @@
+﻿.modal-dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .35);
+    z-index: 1000;
+}
+
+.modal-dialog-container {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border-radius: .5rem;
+    width: min(600px, 92vw);
+    max-height: min(800px, 92vh);
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .2);
+    z-index: 1001;
+}
+
+.modal-dialog-header {
+    padding: .75rem 1rem;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-dialog-body {
+    overflow: hidden;
+    flex: 1;
+}
+
+.modal-dialog-footer {
+    padding: .75rem 1rem;
+    border-top: 1px solid #eee;
+}
+
+.modal-dialog-btn-close {
+    background: none;
+    border: none;
+    border-radius: 2px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.modal-dialog-btn-close:hover {
+    color: #97565e;
+}
+
+.modal-dialog-btn-close:active {
+    background-color: #dc3545;
+    color: #fff;
+}

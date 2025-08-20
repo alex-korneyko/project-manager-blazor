@@ -1,0 +1,24 @@
+﻿@if (_show)
+{
+    <div class="modal-dialog-backdrop" @onclick="CloseModal"></div>
+    <div class="modal-dialog-container" style="width: @Width; height: @Height" role="dialog" aria-modal="true">
+        @if (ModalDialogHeader is not null)
+        {
+            <div class="modal-dialog-header">
+                @ModalDialogHeader
+                <button class="modal-dialog-btn-close" @onclick="CloseModal" aria-label="Close">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+        }
+        <div class="modal-dialog-body">
+            @ModalDialogBody
+        </div>
+        @if (ModalDialogFooter is not null)
+        {
+            <div class="modal-dialog-footer">
+                @ModalDialogFooter
+            </div>
+        }
+    </div>
+}

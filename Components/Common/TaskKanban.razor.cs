@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Components.Modals;
+using ProjectManager.Components.Modals.Modal;
 using ProjectManager.Data;
 using ProjectManager.Domain.Entities;
 using TaskStatus = ProjectManager.Domain.Entities.TaskStatus;
@@ -31,6 +32,8 @@ public partial class TaskKanban : ComponentBase
 
     private NewTaskModal _newTaskModal = null!;
     private EditTaskModal _editTaskModal = null!;
+    private SplittedModal _splitModal;
+    private ModalDialog _modalDialog;
 
     [Inject] public IDbContextFactory<ApplicationDbContext> DbContextFactory { get; set; } = null!;
     [Inject] private IAuthorizationService Authz { get; set; } = null!;

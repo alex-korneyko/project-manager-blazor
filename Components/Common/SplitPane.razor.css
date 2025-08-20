@@ -1,0 +1,37 @@
+﻿.split-container{
+    display:flex;
+    flex-direction:row;
+    position:relative;
+    overflow:hidden;
+}
+
+.split-left, .split-right{
+    height:100%;
+    display:flex;
+    min-width:0;
+    min-height:0;
+}
+
+.split-left{ flex:0 0 auto; }
+.split-right{ flex:1 1 auto; }
+
+.split-gutter{
+    width:6px;
+    cursor:col-resize;
+    user-select:none;
+    touch-action:none;
+    position:relative;
+    z-index:2;
+}
+
+/* this is the gutter line */
+.split-gutter::after{
+    content:"";
+    position:absolute;
+    left:50%;
+    top:0;
+    transform:translateX(-50%);
+    width:2px;
+    height:100%;
+    background:#cbd5e1;
+}

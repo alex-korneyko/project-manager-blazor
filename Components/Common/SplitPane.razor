@@ -1,0 +1,19 @@
+﻿
+@inherits SplitPaneBase
+
+<div @ref="_containerRef" class="split-container" style="width:@Width;">
+    <div @ref="_leftRef"  class="split-left"  style="min-width:@MinLeftPx; width:@LeftWidthPx;">
+        @Left
+    </div>
+
+    <div @ref="_gutterRef" class="split-gutter"></div>
+
+    <div class="split-right" style="min-width:@MinRightPx;">
+        @Right
+    </div>
+</div>
+
+
+@code {
+
+}
