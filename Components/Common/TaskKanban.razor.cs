@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Components.Modals;
-using ProjectManager.Components.Modals.Modal;
 using ProjectManager.Data;
 using ProjectManager.Domain.Entities;
 using TaskStatus = ProjectManager.Domain.Entities.TaskStatus;
@@ -24,17 +23,14 @@ public partial class TaskKanban : ComponentBase
     };
 
     private Project? _currentProject;
-    private Guid _currentTaskId;
     private readonly Dictionary<TaskStatus, List<TaskItem>> _columns = new();
     private readonly HashSet<Guid> _busyTasks = new();
     private Guid? _draggingId;
     private string? _error;
 
     private NewTaskModal _newTaskModal = null!;
-    private EditTaskModal _editTaskModal = null!;
-    private SplittedModal _splitModal;
-    private ModalDialog _modalDialog;
-    private TaskModal _taskModal;
+    private TaskModal _taskModal = null!;
+    private int _dragDepth;
 
     [Inject] public IDbContextFactory<ApplicationDbContext> DbContextFactory { get; set; } = null!;
     [Inject] private IAuthorizationService Authz { get; set; } = null!;
@@ -81,6 +77,8 @@ public partial class TaskKanban : ComponentBase
 
     private async Task OnDrop(TaskStatus target)
     {
+        _dragDepth = 0;
+
         if (_draggingId is null) return;
 
         try
@@ -151,8 +149,20 @@ public partial class TaskKanban : ComponentBase
         StateHasChanged();
     }
 
-    private void OnDragEnter(TaskStatus col) => _hover[col] = true;
-    private void OnDragLeave(TaskStatus col) => _hover[col] = false;
+    private void OnDragEnter(TaskStatus col)
+    {
+        _dragDepth++;
+        _hover[col] = true;
+    }
+
+    private void OnDragLeave(TaskStatus col)
+    {
+        _dragDepth--;
+        if (_dragDepth == 0)
+        {
+            _hover[col] = false;
+        }
+    }
 
     private async Task OnTaskSaved(TaskItem task)
     {

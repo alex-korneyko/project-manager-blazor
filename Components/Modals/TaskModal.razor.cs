@@ -21,7 +21,7 @@ public partial class TaskModal : ComponentBase, IModal<Guid, TaskItem>
     [Inject] IDbContextFactory<ApplicationDbContext> DbContextFactory { get; set; } = null!;
     [Inject] private IAuthorizationService Authz { get; set; } = null!;
     [Inject] private AuthenticationStateProvider Auth { get; set; } = null!;
-    [Inject] private ILogger<EditTaskModal> Log { get; set; } = null!;
+    [Inject] private ILogger<TaskModal> Log { get; set; } = null!;
 
     [Parameter] public EventCallback<TaskItem> OnModalActionSucceeded { get; set; }
     [Parameter] public EventCallback<string> OnModalActionFailed { get; set; }
