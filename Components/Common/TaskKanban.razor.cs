@@ -34,6 +34,7 @@ public partial class TaskKanban : ComponentBase
     private EditTaskModal _editTaskModal = null!;
     private SplittedModal _splitModal;
     private ModalDialog _modalDialog;
+    private TaskModal _taskModal;
 
     [Inject] public IDbContextFactory<ApplicationDbContext> DbContextFactory { get; set; } = null!;
     [Inject] private IAuthorizationService Authz { get; set; } = null!;

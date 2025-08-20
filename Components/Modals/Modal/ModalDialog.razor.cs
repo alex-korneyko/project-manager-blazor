@@ -15,9 +15,10 @@ public partial class ModalDialog : ComponentBase
     [Parameter] public string Height { get; set; } = "400px";
     [Parameter] public string Width { get; set; } = "500px";
 
-    public async Task OpenModal()
+    public async Task OpenModalAsync()
     {
         _show = true;
+        StateHasChanged();
     }
 
     public void CloseModal(MouseEventArgs? args = null)

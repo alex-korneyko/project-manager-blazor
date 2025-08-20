@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 namespace ProjectManager.Components.Common;
@@ -13,7 +15,6 @@ public partial class SplitPane : SplitPaneBase, IAsyncDisposable
 
     // Container size
     [Parameter] public string Width { get; set; } = "100%";
-    [Parameter] public string Height { get; set; } = "400px";
 
     // Minimal width of each panel (px)
     [Parameter] public int MinLeft { get; set; } = 150;
@@ -34,6 +35,7 @@ public partial class SplitPane : SplitPaneBase, IAsyncDisposable
     private ElementReference _gutterRef;
 
     [Inject] protected IJSRuntime JsRuntime { get; set; } = null!;
+    [Inject] protected ProtectedLocalStorage ProtectedLocalStorage { get; set; } = null!;
 
     private DotNetObjectReference<SplitPane>? _dotnetRef;
 
@@ -43,7 +45,15 @@ public partial class SplitPane : SplitPaneBase, IAsyncDisposable
 
         _mod = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/Common/SplitPane.razor.js");
         _dotnetRef = DotNetObjectReference.Create(this);
+
+        var storageResult = await ProtectedLocalStorage.GetAsync<double>("splitPaneRatio");
+        if (storageResult.Success)
+        {
+            InitialLeftRatio = storageResult.Value;
+        }
+
         await _mod.InvokeVoidAsync("init", _containerRef, _gutterRef, _leftRef, _dotnetRef, MinLeft, MinRight, InitialLeftRatio);
+        StateHasChanged();
     }
 
     [JSInvokable]
@@ -52,6 +62,12 @@ public partial class SplitPane : SplitPaneBase, IAsyncDisposable
         LeftWidth = leftPx;
         StateHasChanged();
         return Task.CompletedTask;
+    }
+
+    [JSInvokable]
+    public async Task OnMouseUp(double ratio)
+    {
+        await ProtectedLocalStorage.SetAsync("splitPaneRatio", ratio);
     }
 
     public override void Dispose()

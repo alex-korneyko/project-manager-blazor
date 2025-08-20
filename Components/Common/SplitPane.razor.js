@@ -20,6 +20,11 @@
     };
     
     const stop = () => {
+        const rectWidth = container.getBoundingClientRect().width;
+        const leftWidth = left.getBoundingClientRect().width;
+        const ratio = leftWidth/rectWidth;
+        dotnet.invokeMethodAsync("OnMouseUp", ratio);
+        
         if (!state.dragging) return;
         state.dragging = false;
         window.removeEventListener("pointermove", onMove, true);

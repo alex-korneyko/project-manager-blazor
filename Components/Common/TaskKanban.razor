@@ -32,7 +32,7 @@
                     Class="@(busy ? "busy" : null)"
                     draggable="true"
                     @ondragstart="@(() => OnDragStart(t.Id))"
-                    @onclick="@(() => _modalDialog.OpenModal())"/>
+                    @onclick="@( async () => await _taskModal.OpenModalAsync(t.Id))"/>
             }
 
             <div class="kanban-col-footer">
@@ -59,6 +59,7 @@
 
 <EditTaskModal @ref="_editTaskModal" TaskId="_currentTaskId" OnModalActionSucceeded="OnTaskSaved"/>
 <SplittedModal @ref="_splitModal" TaskId="_currentTaskId" OnModalActionSucceeded="OnTaskSaved"></SplittedModal>
+<TaskModal @ref="_taskModal" TaskId="_currentTaskId" OnModalActionSucceeded="OnTaskSaved"></TaskModal>
 
 <ModalDialog @ref="_modalDialog" Width="400px">
     <ModalDialogHeader>

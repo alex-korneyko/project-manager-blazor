@@ -1,4 +1,6 @@
 ﻿.attachments {
+    height: 100%;
+    padding-top: .5rem;
     overflow-y: hidden;
     display: flex;
     flex-direction: column;

@@ -3,11 +3,11 @@
     flex-direction:row;
     position:relative;
     overflow:hidden;
+    height:100%;
 }
 
 .split-left, .split-right{
     height:100%;
-    display:flex;
     min-width:0;
     min-height:0;
 }
