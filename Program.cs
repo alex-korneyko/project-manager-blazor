@@ -32,8 +32,6 @@ builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection("Sto
 builder.Services.AddSingleton<IFileStorageService, LocalFileStorageService>();
 builder.Services.AddScoped<CommentsService>();
 
-builder.Services.AddScoped<ToolBarService>();
-
 
 var app = builder.Build();
 
@@ -77,10 +75,10 @@ else
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
-app.UseAntiforgery();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseAntiforgery();
 app.MapControllers();
 
 app.MapRazorComponents<App>()

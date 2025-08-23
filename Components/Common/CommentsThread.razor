@@ -13,9 +13,9 @@
         }
         else
         {
-            @foreach (var n in _nodes)
+            @foreach (var commentNode in _nodes)
             {
-                <CommentItem Node="n" OnChanged="Reload" />
+                <CommentItem Node="commentNode" OnChanged="Reload" />
             }
         }
     </div>

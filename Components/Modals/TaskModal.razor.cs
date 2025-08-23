@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using ProjectManager.Components.Modals.Modal;
 using ProjectManager.Data;
 using ProjectManager.Domain.Entities;
+using static ProjectManager.Authorization.AuthorizationPoliciesNames;
 
 namespace ProjectManager.Components.Modals;
 
@@ -47,7 +48,7 @@ public partial class TaskModal : ComponentBase, IModal<Guid, TaskItem>
         if (_task is null) { _error = "Task not found."; return; }
 
         var user = (await Auth.GetAuthenticationStateAsync()).User;
-        _canModify = (await Authz.AuthorizeAsync(user, _task, "CanTaskModify")).Succeeded;
+        _canModify = (await Authz.AuthorizeAsync(user, _task, CanTaskModify)).Succeeded;
 
         _model = new() { Title = _task.Title, DescriptionMarkdown = _task.DescriptionMarkdown };
     }
@@ -78,7 +79,7 @@ public partial class TaskModal : ComponentBase, IModal<Guid, TaskItem>
         if (_task is null) { _error = "Task not found."; return; }
 
         var user = (await Auth.GetAuthenticationStateAsync()).User;
-        _canModify = (await Authz.AuthorizeAsync(user, _task, "CanTaskModify")).Succeeded;
+        _canModify = (await Authz.AuthorizeAsync(user, _task, CanTaskModify)).Succeeded;
 
         _model = new() { Title = _task.Title, DescriptionMarkdown = _task.DescriptionMarkdown };
 

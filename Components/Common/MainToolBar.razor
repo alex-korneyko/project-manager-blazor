@@ -1,0 +1,50 @@
+﻿@inject NavigationManager NavigationManager
+
+@rendermode InteractiveServer
+
+<ToolBar >
+    <Left>
+        <AuthorizeView>
+            <Authorized>
+                <ButtonIcon style="margin-left: 10px;" OnClickEvent="@(() => NavigationManager.NavigateTo("/"))">
+                    <i class="bi bi-house"></i>
+                </ButtonIcon>
+                <ButtonIcon style="margin-left: 10px;" OnClickEvent="@(() => NavigationManager.NavigateTo("Projects"))">
+                    <i class="bi bi-kanban"></i>
+                </ButtonIcon>
+            </Authorized>
+        </AuthorizeView>
+    </Left>
+    <Right>
+        <AuthorizeView>
+            <Authorized>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle" style="margin-right: 5px"></i>@context.User.Identity?.Name
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><NavLink class="dropdown-item" href="Account/Manage">Profile</NavLink></li>
+                        <li>
+                            <form class="dropdown-item" action="Account/Logout" method="post">
+                                <AntiforgeryToken/>
+                                <input type="hidden" name="ReturnUrl" value="@_currentUrl"/>
+                                <button type="submit" class="nav-link">
+                                    <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+    </Right>
+</ToolBar>
+
+@code {
+    private string? _currentUrl;
+
+    protected override void OnInitialized()
+    {
+        _currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+    }
+}

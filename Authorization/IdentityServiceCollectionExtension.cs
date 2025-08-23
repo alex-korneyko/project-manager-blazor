@@ -6,6 +6,7 @@ using ProjectManager.Components.Account;
 using ProjectManager.Data;
 using ProjectManager.Data.Models;
 using ProjectManager.Services.Security;
+using static ProjectManager.Authorization.AuthorizationPoliciesNames;
 
 namespace ProjectManager.Authorization;
 
@@ -20,11 +21,10 @@ public static class IdentityServiceCollectionExtension
 
         services.AddAuthorization(options =>
         {
-            options.AddPolicy("IsProjectMember", policy => policy.Requirements.Add(new ProjectMemberRequirement()));
-            options.AddPolicy("IsProjectOwner", policy => policy.Requirements.Add(new ProjectOwnerRequirement()));
-            options.AddPolicy("IsCommentAuthor", policy => policy.Requirements.Add(new CommentAuthorRequirement()));
-            options.AddPolicy("CanTaskModify", policy => policy.Requirements.Add(new TaskModifyRequirement()));
-            options.AddPolicy("CommentAuthor", policy => policy.Requirements.Add(new CommentAuthorRequirement()));
+            options.AddPolicy(IsProjectMember, policy => policy.Requirements.Add(new ProjectMemberRequirement()));
+            options.AddPolicy(IsProjectOwner, policy => policy.Requirements.Add(new ProjectOwnerRequirement()));
+            options.AddPolicy(CanTaskModify, policy => policy.Requirements.Add(new TaskModifyRequirement()));
+            options.AddPolicy(CommentAuthor, policy => policy.Requirements.Add(new CommentAuthorRequirement()));
         });
 
         services.AddScoped<IProjectAccessService, ProjectAccessService>();

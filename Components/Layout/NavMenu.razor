@@ -1,6 +1,8 @@
-﻿@implements IDisposable
+﻿@using System.Security.Claims
+@implements IDisposable
 
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -48,7 +50,7 @@
                         <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
                     </NavLink>
                 </div>
-                <div class="nav-item px-3">
+                <div class="nav-item px-3" @key="_userKey">
                     <form action="Account/Logout" method="post">
                         <AntiforgeryToken/>
                         <input type="hidden" name="ReturnUrl" value="@currentUrl"/>
@@ -75,12 +77,21 @@
 </div>
 
 @code {
+    [CascadingParameter] private Task<AuthenticationState> AuthStateTask { get; set; } = default!;
+    private string? _userKey;
     private string? currentUrl;
 
     protected override void OnInitialized()
     {
+        AuthenticationStateProvider.AuthenticationStateChanged += OnAuthChanged;
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var state = await AuthStateTask;
+        _userKey = state.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anon";
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
@@ -89,8 +100,16 @@
         StateHasChanged();
     }
 
+    private async void OnAuthChanged(Task<AuthenticationState> task)
+    {
+        // wait for new state and rerender template
+        var _ = await task;
+        await InvokeAsync(StateHasChanged);
+    }
+
     public void Dispose()
     {
+        AuthenticationStateProvider.AuthenticationStateChanged -= OnAuthChanged;
         NavigationManager.LocationChanged -= OnLocationChanged;
     }
 

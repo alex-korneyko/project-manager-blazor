@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using ProjectManager.Components.UiModels;
 using ProjectManager.Data;
 using ProjectManager.Domain.Entities;
+using static ProjectManager.Authorization.AuthorizationPoliciesNames;
 using TaskStatus = ProjectManager.Domain.Entities.TaskStatus;
 
 namespace ProjectManager.Components.Modals;
@@ -56,7 +57,7 @@ public partial class NewTaskModal : ComponentBase, IModal<TaskStatus, TaskItem>
 
             var user = (await AuthState.GetAuthenticationStateAsync()).User;
 
-            var memberResult = await Authz.AuthorizeAsync(user, Project, "IsProjectMember");
+            var memberResult = await Authz.AuthorizeAsync(user, Project, IsProjectMember);
             if (!memberResult.Succeeded)
             {
                 _modalError = "No rights for task creation.";

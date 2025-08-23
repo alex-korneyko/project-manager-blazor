@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Data;
 using ProjectManager.Services.Storage;
+using static ProjectManager.Authorization.AuthorizationPoliciesNames;
 
 namespace ProjectManager.Controllers;
 
@@ -24,7 +25,7 @@ public class FileStorageController(
             .FirstOrDefaultAsync(a => a.Id == attachmentId && a.TaskItemId == taskId, ct);
         if (att is null) return NotFound();
 
-        var res = await auth.AuthorizeAsync(User, att, "IsProjectMember");
+        var res = await auth.AuthorizeAsync(User, att, IsProjectMember);
         if (!res.Succeeded) return Forbid();
 
         var stream = await storage.OpenReadAsync(att.StoredPath, ct);

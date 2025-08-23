@@ -10,6 +10,7 @@ using ProjectManager.Components.UiModels;
 using ProjectManager.Data;
 using ProjectManager.Data.Models;
 using ProjectManager.Domain.Entities;
+using static ProjectManager.Authorization.AuthorizationPoliciesNames;
 using TaskStatus = ProjectManager.Domain.Entities.TaskStatus;
 
 namespace ProjectManager.Components.Pages;
@@ -46,21 +47,6 @@ public partial class ProjectDetails : ComponentBase
     [Inject] public IDbContextFactory<ApplicationDbContext> DbContextFactory { get; set; } = null!;
     [Inject] private ILogger<ProjectDetails> Logger { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
-    [Inject] private ToolBarService ToolBarService { get; set; } = null!;
-
-    protected override void OnInitialized()
-    {
-        ToolBarService.InserTools(new List<ToolBarButtonModel>
-        {
-            new()
-            {
-                Title = "Back to projects list",
-                Class = "btn btn-primary",
-                ClickAction = () => { NavigationManager.NavigateTo("/projects/"); }
-            }
-        });
-        base.OnInitialized();
-    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -85,7 +71,7 @@ public partial class ProjectDetails : ComponentBase
 
         _currentUserId = user.GetUserId();
 
-        var memberResult = await AuthorizationService.AuthorizeAsync(user, project, "IsProjectMember");
+        var memberResult = await AuthorizationService.AuthorizeAsync(user, project, IsProjectMember);
         if (!memberResult.Succeeded)
         {
             _project = null;
@@ -97,7 +83,7 @@ public partial class ProjectDetails : ComponentBase
         _ownerEmail = project.Owner.Email;
         _members = project.Members.OrderBy(member => member.User.Email).ToList();
 
-        var ownerResult = await AuthorizationService.AuthorizeAsync(user, project, "IsProjectOwner");
+        var ownerResult = await AuthorizationService.AuthorizeAsync(user, project, IsProjectOwner);
         _isOwner = ownerResult.Succeeded;
 
         await LoadTasksAsync();
@@ -117,7 +103,7 @@ public partial class ProjectDetails : ComponentBase
 
             // Ещё раз проверим право владельца
             var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
-            var ownerCheck = await AuthorizationService.AuthorizeAsync(user, _project, "IsProjectOwner");
+            var ownerCheck = await AuthorizationService.AuthorizeAsync(user, _project, IsProjectOwner);
             if (!ownerCheck.Succeeded) { _inviteError = "You do not have rights"; return; }
 
             var email = _inviteEmail.Trim();
@@ -163,7 +149,7 @@ public partial class ProjectDetails : ComponentBase
             var dbContext = await DbContextFactory.CreateDbContextAsync();
 
             var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
-            var ownerCheck = await AuthorizationService.AuthorizeAsync(user, _project, "IsProjectOwner");
+            var ownerCheck = await AuthorizationService.AuthorizeAsync(user, _project, IsProjectOwner);
             if (!ownerCheck.Succeeded) { _inviteError = "No rights to delete."; return; }
 
             var pm = await dbContext.ProjectMembers.FirstOrDefaultAsync(x => x.Id == projectMemberId && x.ProjectId == _project.Id);
@@ -209,7 +195,7 @@ public partial class ProjectDetails : ComponentBase
 
             var dbContext = await DbContextFactory.CreateDbContextAsync();
             var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
-            var memberResult = await AuthorizationService.AuthorizeAsync(user, _project, "IsProjectMember");
+            var memberResult = await AuthorizationService.AuthorizeAsync(user, _project, IsProjectMember);
             if (!memberResult.Succeeded) { _taskError = "No rights to task create."; return; }
 
             if (_currentUserId == null)
@@ -271,7 +257,7 @@ public partial class ProjectDetails : ComponentBase
         {
             var dbContext = await DbContextFactory.CreateDbContextAsync();
             var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
-            var canModify = await AuthorizationService.AuthorizeAsync(user, t, "CanTaskModify");
+            var canModify = await AuthorizationService.AuthorizeAsync(user, t, CanTaskModify);
             if (!canModify.Succeeded) { _taskError = "No rights to task update."; return; }
 
             t.Title = _editTask.Title.Trim();
@@ -294,7 +280,7 @@ public partial class ProjectDetails : ComponentBase
         {
             var dbContext = await DbContextFactory.CreateDbContextAsync();
             var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
-            var canModify = await AuthorizationService.AuthorizeAsync(user, t, "CanTaskModify");
+            var canModify = await AuthorizationService.AuthorizeAsync(user, t, CanTaskModify);
             if (!canModify.Succeeded) { _taskError = "No rights to task delete."; return; }
 
             dbContext.Tasks.Remove(t);
@@ -315,7 +301,7 @@ public partial class ProjectDetails : ComponentBase
         {
             var dbContext = await DbContextFactory.CreateDbContextAsync();
             var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
-            var isMember = await AuthorizationService.AuthorizeAsync(user, t, "IsProjectMember");
+            var isMember = await AuthorizationService.AuthorizeAsync(user, t, IsProjectMember);
             if (!isMember.Succeeded) { _taskError = "No rights to change status."; return; }
 
             t.Status = newStatus;

@@ -6,6 +6,7 @@ using ProjectManager.Common.Security;
 using ProjectManager.Data;
 using ProjectManager.Domain;
 using ProjectManager.Domain.Entities;
+using static ProjectManager.Authorization.AuthorizationPoliciesNames;
 
 namespace ProjectManager.Services;
 
@@ -23,7 +24,7 @@ public class CommentsService(
 
         if (task is null) return [];
 
-        var canReed = await authorizationService.AuthorizeAsync(user, task, "IsProjectMember");
+        var canReed = await authorizationService.AuthorizeAsync(user, task, IsProjectMember);
 
         if (!canReed.Succeeded) return [];
 
@@ -69,7 +70,7 @@ public class CommentsService(
         var task = await dbContext.Tasks.FirstOrDefaultAsync(task => task.Id == taskId, ct);
         if (task is null) return null;
 
-        var canModify = await authorizationService.AuthorizeAsync(user, task, "IsProjectMember");
+        var canModify = await authorizationService.AuthorizeAsync(user, task, IsProjectMember);
         if (!canModify.Succeeded) return null;
 
         var userId = user.GetUserId() ?? "";
@@ -96,7 +97,7 @@ public class CommentsService(
         var comment = await dbContext.TaskComments.FirstOrDefaultAsync(comment => comment.Id == commentId, ct);
         if (comment is null) return false;
 
-        var canEdit = await authorizationService.AuthorizeAsync(user, comment, "CommentAuthor");
+        var canEdit = await authorizationService.AuthorizeAsync(user, comment, CommentAuthor);
         if (!canEdit.Succeeded) return false;
 
         comment.BodyMarkdown = bodyMarkdown;
@@ -114,7 +115,7 @@ public class CommentsService(
         var root = await dbContext.TaskComments.FirstOrDefaultAsync(comment => comment.Id == rootCommentId, ct);
         if (root is null) return false;
 
-        var canDelete = await authorizationService.AuthorizeAsync(user, root, "CommentAuthor");
+        var canDelete = await authorizationService.AuthorizeAsync(user, root, CommentAuthor);
         if (!canDelete.Succeeded) return false;
 
         var allTaskComments = await dbContext.TaskComments

@@ -9,6 +9,7 @@ public partial class SplitPane : SplitPaneBase, IAsyncDisposable
 {
     IJSObjectReference? _mod;
 
+    [Parameter] [EditorRequired] public string Id { get; set; }
     // Pane content
     [Parameter] public RenderFragment? Left { get; set; }
     [Parameter] public RenderFragment? Right { get; set; }
@@ -33,11 +34,17 @@ public partial class SplitPane : SplitPaneBase, IAsyncDisposable
     private ElementReference _containerRef;
     private ElementReference _leftRef;
     private ElementReference _gutterRef;
+    private string _localStorageRatioFieldName;
 
     [Inject] protected IJSRuntime JsRuntime { get; set; } = null!;
     [Inject] protected ProtectedLocalStorage ProtectedLocalStorage { get; set; } = null!;
 
     private DotNetObjectReference<SplitPane>? _dotnetRef;
+
+    protected override void OnParametersSet()
+    {
+        _localStorageRatioFieldName = $"splitPaneRatio_{Id}";
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -46,7 +53,7 @@ public partial class SplitPane : SplitPaneBase, IAsyncDisposable
         _mod = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/Common/SplitPane.razor.js");
         _dotnetRef = DotNetObjectReference.Create(this);
 
-        var storageResult = await ProtectedLocalStorage.GetAsync<double>("splitPaneRatio");
+        var storageResult = await ProtectedLocalStorage.GetAsync<double>(_localStorageRatioFieldName);
         if (storageResult.Success)
         {
             InitialLeftRatio = storageResult.Value;
@@ -67,7 +74,7 @@ public partial class SplitPane : SplitPaneBase, IAsyncDisposable
     [JSInvokable]
     public async Task OnMouseUp(double ratio)
     {
-        await ProtectedLocalStorage.SetAsync("splitPaneRatio", ratio);
+        await ProtectedLocalStorage.SetAsync(_localStorageRatioFieldName, ratio);
     }
 
     public override void Dispose()

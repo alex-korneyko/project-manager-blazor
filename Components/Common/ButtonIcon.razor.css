@@ -1,0 +1,15 @@
+﻿.button-icon{
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    border: 1px solid #cbd5e1;
+    background-color: #d8e2ef;
+}
+
+.button-icon:hover{
+    background-color: #e6eef3;
+}
+
+.button-icon:active{
+    border: 1px solid #4c91e1;
+}

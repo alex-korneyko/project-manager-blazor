@@ -5,56 +5,73 @@
 @attribute [Authorize]
 @page "/projects/{ProjectId:guid}"
 
-<h2 class="mb-3">@_project?.Name</h2>
+<SplitPane Id="ProjectDetails" MinLeft="200" MinRight="200" InitialLeftRatio="0.3">
+    <Left>
 
-@if (_loading)
-{
-    <p>Loading…</p>
-}
-else if (_project is null)
-{
-    <p class="text-danger">Project not found or access denied.</p>
-}
-else
-{
-    <p class="text-muted">@_project.Description</p>
+    </Left>
+    <Right>
+        <div style="padding: 1rem">
+            <h2 class="mb-3">@_project?.Name</h2>
 
-    <div class="mt-4">
-        @if (_tasks.Count == 0)
-        {
-            <p class="text-muted">There are no tasks yet.</p>
-        }
-        else
-        {
-            <TaskKanban ProjectId="ProjectId" @ref="_kanban"/>
-        }
-    </div>
+            @if (_loading)
+            {
+                <p>Loading…</p>
+            }
+            else if (_project is null)
+            {
+                <p class="text-danger">Project not found or access denied.</p>
+            }
+            else
+            {
+                <p class="text-muted">@_project.Description</p>
 
-    @if (_isOwner)
-    {
-        <div class="mt-5">
-            <h4>Members</h4>
-            <div class="mb-2">
-                <input class="form-control" placeholder="User's email to invite" @oninput="@(InviteEmailChanged)"/>
-                <button class="btn btn-primary mt-2" @onclick="Invite" disabled="@_inviteButtonDisabled">Invite</button>
-                @if (!string.IsNullOrWhiteSpace(_inviteError)) { <div class="text-danger mt-2">@_inviteError</div> }
-                @if (!string.IsNullOrWhiteSpace(_inviteOk)) { <div class="text-success mt-2">@_inviteOk</div> }
-            </div>
-            <ul class="list-group">
-                <li class="list-group-item d-flex justify-content-between">
-                    <span><strong>Owner:</strong> @_ownerEmail</span>
-                </li>
-                @foreach (var m in _members)
+                <div class="mt-4">
+                    @if (_tasks.Count == 0)
+                    {
+                        <p class="text-muted">There are no tasks yet.</p>
+                    }
+                    else
+                    {
+                        <TaskKanban ProjectId="ProjectId" @ref="_kanban"/>
+                    }
+                </div>
+
+                @if (_isOwner)
                 {
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>@m.User.Email (@m.Role)</span>
-                        <button class="btn btn-sm btn-outline-danger" @onclick="() => RemoveMember(m.Id)">Delete</button>
-                    </li>
+                    <div class="mt-5">
+                        <h4>Members</h4>
+                        <div class="mb-2">
+                            <input class="form-control" placeholder="User's email to invite" @oninput="@(InviteEmailChanged)"/>
+                            <button class="btn btn-primary mt-2" @onclick="Invite" disabled="@_inviteButtonDisabled">Invite</button>
+                            @if (!string.IsNullOrWhiteSpace(_inviteError))
+                            {
+                                <div class="text-danger mt-2">@_inviteError</div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(_inviteOk))
+                            {
+                                <div class="text-success mt-2">@_inviteOk</div>
+                            }
+                        </div>
+                        <ul class="list-group">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span><strong>Owner:</strong> @_ownerEmail</span>
+                            </li>
+                            @foreach (var m in _members)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>@m.User.Email (@m.Role)</span>
+                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => RemoveMember(m.Id)">Delete</button>
+                                </li>
+                            }
+                        </ul>
+                    </div>
                 }
-            </ul>
+            }
         </div>
-    }
-}
+    </Right>
+</SplitPane>
+
+
 
 @code {
     

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using ProjectManager.Components.Modals;
 using ProjectManager.Data;
 using ProjectManager.Domain.Entities;
+using static ProjectManager.Authorization.AuthorizationPoliciesNames;
 using TaskStatus = ProjectManager.Domain.Entities.TaskStatus;
 
 namespace ProjectManager.Components.Common;
@@ -91,7 +92,7 @@ public partial class TaskKanban : ComponentBase
             if (t.Status == target) return;
 
             var user = (await AuthState.GetAuthenticationStateAsync()).User;
-            var auth = await Authz.AuthorizeAsync(user, t, "IsProjectMember");
+            var auth = await Authz.AuthorizeAsync(user, t, IsProjectMember);
             if (!auth.Succeeded)
             {
                 _error = "No rights for the status change.";

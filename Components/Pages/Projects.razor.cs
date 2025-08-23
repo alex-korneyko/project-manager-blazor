@@ -18,7 +18,6 @@ public partial class Projects : ComponentBase
     [Inject] private IProjectAccessService ProjectAccessService { get; set; } = null!;
     [Inject] public IDbContextFactory<ApplicationDbContext> DbContextFactory { get; set; } = null!;
     [Inject] private ILogger<Projects> Logger { get; set; } = null!;
-    [Inject] private ToolBarService ToolBarService { get; set; } = null!;
 
     private ClaimsPrincipal _user;
     private bool _loading = true;
@@ -28,16 +27,6 @@ public partial class Projects : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        ToolBarService.InserTools(new List<ToolBarButtonModel>
-        {
-            new ToolBarButtonModel
-            {
-                Title = "New project",
-                Class = "btn btn-success",
-                ClickAction = async () => { await _newProjectModal.OpenModalAsync(); }
-            }
-        });
-
         _user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
         var userId = _user.GetUserId();
         _projects = (await ProjectAccessService.GetVisibleProjectsAsync(userId!)).ToList();

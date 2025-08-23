@@ -21,9 +21,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Update="Components\Common\ToolBarService.cs">
-        <DependentUpon>ToolBar.razor</DependentUpon>
-      </Compile>
       <Compile Update="Components\Common\SplitPaneBase.cs">
         <DependentUpon>SplitPane.razor</DependentUpon>
       </Compile>

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using ProjectManager.Domain;
 using ProjectManager.Services;
+using static ProjectManager.Authorization.AuthorizationPoliciesNames;
 
 namespace ProjectManager.Components.Common;
 
@@ -24,7 +25,7 @@ public partial class CommentItem : ComponentBase
     {
         var user = (await Auth.GetAuthenticationStateAsync()).User;
 
-        var isAuthor = await Authz.AuthorizeAsync(user, Node.Comment, "CommentAuthor");
+        var isAuthor = await Authz.AuthorizeAsync(user, Node.Comment, CommentAuthor);
         CanModify = isAuthor.Succeeded;
     }
 
