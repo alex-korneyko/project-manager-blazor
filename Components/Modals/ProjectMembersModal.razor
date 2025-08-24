@@ -1,0 +1,33 @@
+﻿@using ProjectManager.Components.Modals.Modal
+
+<ModalDialog @ref="@_modalDialogRef">
+    <ModalDialogHeader>
+        <h5 style="margin: 0">Project Members</h5>
+    </ModalDialogHeader>
+    <ModalDialogBody>
+        <div style="height: 100%; overflow: auto">
+            @if (_project is not null)
+            {
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><strong>@_project.Owner.Email (Owner)</strong></span>
+                    </li>
+                    @foreach (var member in _project.Members)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>@member.User.Email (@member.Role)</span>
+                            @* <button class="btn btn-sm btn-outline-danger" @onclick="() => RemoveMember(member.Id)">Delete</button> *@
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </ModalDialogBody>
+    <ModalDialogFooter>
+        <span>@(_error ?? string.Empty)</span>
+    </ModalDialogFooter>
+</ModalDialog>
+
+@code {
+    
+}

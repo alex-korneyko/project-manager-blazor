@@ -15,7 +15,7 @@ public class TaskItem
     public TaskStatus Status { get; set; } = TaskStatus.Backlog;
 
     public string AuthorId { get; set; } = default!;
-    public ApplicationUser Author { get; set; } = default!;
+    public ApplicationUser? Author { get; set; }
 
     public List<TaskAttachment> Attachments { get; set; } = new();
     public List<TaskComment> Comments { get; set; } = new();

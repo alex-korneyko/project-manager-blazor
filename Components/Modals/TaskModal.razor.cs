@@ -26,31 +26,11 @@ public partial class TaskModal : ComponentBase, IModal<Guid, TaskItem>
 
     [Parameter] public EventCallback<TaskItem> OnModalActionSucceeded { get; set; }
     [Parameter] public EventCallback<string> OnModalActionFailed { get; set; }
-    [Parameter] public Guid TaskId { get; set; }
 
     private sealed class TaskEditModel
     {
         [Required, MinLength(2)] public string Title { get; set; } = "";
         public string? DescriptionMarkdown { get; set; }
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        _error = null;
-
-        if (TaskId == Guid.Empty)
-        {
-            return;
-        }
-
-        var dbContext = await DbContextFactory.CreateDbContextAsync();
-        _task = await dbContext.Tasks.Include(task => task.Attachments).FirstOrDefaultAsync(task => task.Id == TaskId);
-        if (_task is null) { _error = "Task not found."; return; }
-
-        var user = (await Auth.GetAuthenticationStateAsync()).User;
-        _canModify = (await Authz.AuthorizeAsync(user, _task, CanTaskModify)).Succeeded;
-
-        _model = new() { Title = _task.Title, DescriptionMarkdown = _task.DescriptionMarkdown };
     }
 
     private async Task Save()
@@ -71,11 +51,10 @@ public partial class TaskModal : ComponentBase, IModal<Guid, TaskItem>
 
     public async Task OpenModalAsync(Guid taskId = default)
     {
-        TaskId = taskId;
         _error = null;
 
         var dbContext = await DbContextFactory.CreateDbContextAsync();
-        _task = await dbContext.Tasks.Include(task => task.Attachments).FirstOrDefaultAsync(task => task.Id == TaskId);
+        _task = await dbContext.Tasks.Include(task => task.Attachments).FirstOrDefaultAsync(task => task.Id == taskId);
         if (_task is null) { _error = "Task not found."; return; }
 
         var user = (await Auth.GetAuthenticationStateAsync()).User;

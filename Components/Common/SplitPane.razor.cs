@@ -38,6 +38,7 @@ public partial class SplitPane : SplitPaneBase, IAsyncDisposable
 
     [Inject] protected IJSRuntime JsRuntime { get; set; } = null!;
     [Inject] protected ProtectedLocalStorage ProtectedLocalStorage { get; set; } = null!;
+    [Inject] public ILogger<SplitPane> Logger { get; set; } = null!;
 
     private DotNetObjectReference<SplitPane>? _dotnetRef;
 
@@ -79,12 +80,24 @@ public partial class SplitPane : SplitPaneBase, IAsyncDisposable
 
     public override void Dispose()
     {
-        _dotnetRef?.Dispose();
-        base.Dispose();
+        // _dotnetRef?.Dispose();
+        // base.Dispose();
+        //
+        // _mod?.DisposeAsync().AsTask();
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (_mod is not null) await _mod.DisposeAsync();
+        _dotnetRef?.Dispose();
+
+        try
+        {
+            if (_mod is not null)
+                await _mod.DisposeAsync();
+        }
+        catch (JSDisconnectedException e)
+        {
+            Logger.LogWarning("JS runtime disconnected");
+        }
     }
 }

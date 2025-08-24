@@ -1,0 +1,29 @@
+﻿@using ProjectManager.Components.Modals
+@using ProjectManager.Domain.Entities
+<ToolBar>
+    <Left>
+        <span style="font-weight: 600; color: #6c6c6c">@Project?.Name</span>
+    </Left>
+    <Right>
+        <ButtonIcon style="margin-right: 5px">
+            <i class="bi bi-info-circle" title="Project info" @onclick="ProjectMembersClick"></i>
+        </ButtonIcon>
+        <ButtonIcon>
+            <i class="bi bi-people" title="Project members" @onclick="@(() => _projectMembersModal.OpenModalAsync(Project?.Id))"></i>
+        </ButtonIcon>
+    </Right>
+</ToolBar>
+
+<ProjectMembersModal @ref="_projectMembersModal"></ProjectMembersModal>
+
+@code {
+    private ProjectMembersModal _projectMembersModal = null!;
+
+    [Parameter] [EditorRequired] public Project? Project { get; set; }
+
+    private void ProjectMembersClick(MouseEventArgs obj)
+    {
+        Console.WriteLine("Click");
+    }
+
+}

@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Components.UiModels;
 using ProjectManager.Data;
+using ProjectManager.Data.Models;
 using ProjectManager.Domain.Entities;
 using static ProjectManager.Authorization.AuthorizationPoliciesNames;
 using TaskStatus = ProjectManager.Domain.Entities.TaskStatus;
@@ -21,6 +23,7 @@ public partial class NewTaskModal : ComponentBase, IModal<TaskStatus, TaskItem>
     [Inject] public IDbContextFactory<ApplicationDbContext> DbContextFactory { get; set; } = null!;
     [Inject] private IAuthorizationService Authz { get; set; } = null!;
     [Inject] private AuthenticationStateProvider AuthState { get; set; } = null!;
+    [Inject] private UserManager<ApplicationUser> UserManager { get; set; } = null!;
     [Inject] private ILogger<NewTaskModal> Log { get; set; } = null!;
 
     [Parameter] public EventCallback<TaskItem> OnModalActionSucceeded { get; set; }
@@ -64,6 +67,7 @@ public partial class NewTaskModal : ComponentBase, IModal<TaskStatus, TaskItem>
                 return;
             }
 
+            var applicationUser = await UserManager.GetUserAsync(user);
             var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
 
             var task = new TaskItem
@@ -82,6 +86,8 @@ public partial class NewTaskModal : ComponentBase, IModal<TaskStatus, TaskItem>
             var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.Tasks.Add(task);
             await dbContext.SaveChangesAsync();
+
+            task.Author = applicationUser;
 
             await OnModalActionSucceeded.InvokeAsync(task);
         }

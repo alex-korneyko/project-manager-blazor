@@ -7,10 +7,7 @@
     else
     {
         <div class="title">@Task.Title</div>
-        @if (!string.IsNullOrWhiteSpace(Task.DescriptionMarkdown))
-        {
-            <div class="desc text-muted">@Task.DescriptionMarkdown</div>
-        }
+        <div class="desc text-muted">@(Task.DescriptionMarkdown ?? string.Empty)</div>
         <div class="meta text-muted">
             Author: @(Task.Author.Email ?? Task.AuthorId)
             • @Task.CreatedAtUtc.ToLocalTime()
